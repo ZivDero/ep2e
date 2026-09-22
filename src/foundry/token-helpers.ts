@@ -28,10 +28,12 @@ export const activeTokenStatusEffects = ({ document: data, actor }: Token) =>
   )
 
 export const distanceBetweenTokens = (tokenA: Token, tokenB: Token) => {
-  let distance = Math.hypot(
-    readyCanvas()!.grid.measurePath([tokenA.center, tokenB.center]).distance,
-    Math.abs(tokenA.document.elevation - tokenB.document.elevation),
-  );
+  // Straight line between centers, including elevation. measurePath's
+  // `distance` applies the grid's diagonal rule; `euclidean` doesn't.
+  let distance = readyCanvas()!.grid.measurePath([
+    { ...tokenA.center, elevation: tokenA.document.elevation },
+    { ...tokenB.center, elevation: tokenB.document.elevation },
+  ]).euclidean;
 
   const gridScale = readyCanvas()?.scene.grid.distance || 1;
 
