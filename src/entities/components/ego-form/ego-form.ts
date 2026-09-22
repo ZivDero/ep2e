@@ -113,6 +113,7 @@ export class EgoForm extends DescriptionEditorHost(
     return {
       disabled: this.ego.disabled,
       updateActions: this.ego.updater.path('system', 'description'),
+      document: this.ego.actor as ClientDocument | null,
     };
   }
 

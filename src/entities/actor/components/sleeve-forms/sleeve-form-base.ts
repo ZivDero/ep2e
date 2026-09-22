@@ -5,6 +5,7 @@ import { LitElement, property } from 'lit-element';
 import {
   DescriptionEditorHost,
   descriptionUpdateActions,
+  documentFromUuid,
 } from '@src/components/editor-wrapper/description-editor-host';
 import { FormDrawer } from '../../../components/form-layout/entity-form-drawer-mixin';
 
@@ -17,6 +18,7 @@ export abstract class SleeveFormBase extends DescriptionEditorHost(
     return {
       disabled: this.sleeve.disabled,
       updateActions: descriptionUpdateActions(this.sleeve.updater),
+      document: documentFromUuid(this.sleeve.uuid),
     };
   }
 

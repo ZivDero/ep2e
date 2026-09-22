@@ -25,6 +25,7 @@ type LangEntries =
   | 'ego'
   | 'save'
   | 'description'
+  | 'editorFailed'
   | 'reference'
   | 'negative'
   | 'positive'

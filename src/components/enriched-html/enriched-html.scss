@@ -63,3 +63,54 @@ h1,
 h2 {
   border-color: var(--ep-color-border);
 }
+
+// Content styles that core's TinyMCE stylesheet (css/mce.css) used to
+// provide inside this shadow root; V14 no longer ships TinyMCE.
+h1,
+h2,
+h3,
+h4 {
+  margin: 0.75em 0 0.25em;
+  line-height: 1.2;
+  font-weight: 500;
+}
+
+h1,
+h2 {
+  border-bottom: 1px solid var(--ep-color-border);
+}
+
+p {
+  margin: 0.5em 0;
+}
+
+blockquote {
+  margin: 0.5em 0;
+  padding: 0 0.75em;
+  border-left: 3px solid var(--ep-color-border);
+}
+
+table {
+  width: 100%;
+  margin: 0.5em 0;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.25em 0.5em;
+  border: 1px solid var(--ep-color-border);
+  text-align: left;
+}
+
+code,
+pre {
+  font-family: var(--ep-font-mono);
+}
+
+// Secret blocks are only included for owners; mark them as such.
+section.secret {
+  padding: 0 0.5em;
+  border-left: 3px solid alphav(var(--ep-color-primary), 0.6);
+  background: alphav(var(--ep-color-primary), 0.08);
+}

@@ -19,7 +19,6 @@ import type { UserHotbarEntry } from '@src/features/hotbar-entry';
 import type { PrototypeTokenData } from 'common/data/data';
 import type { ActorData, SceneData } from 'common/data/module';
 import type { Socket } from 'socket.io';
-import type { TinyMCE } from 'tinymce';
 import type { Class, ConditionalPick, Mutable, ValueOf } from 'type-fest';
 import type {
   DeepPartial,
@@ -255,6 +254,13 @@ declare global {
         TextEditor: {
           implementation: typeof TextEditor
         }
+        ProseMirrorEditor: {
+          create(
+            target: HTMLElement,
+            content: string,
+            options?: object,
+          ): Promise<unknown>
+        }
       }
       sheets: {
         FolderConfig: typeof FolderConfig
@@ -288,7 +294,6 @@ declare global {
 
   const CONST: typeof import('common/constants');
 
-  const tinymce: TinyMCE;
 
   interface GridLayer {
     getSnappedPosition(

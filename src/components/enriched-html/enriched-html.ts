@@ -94,10 +94,25 @@ export class EnrichedHTML extends LitElement {
 
   @property({ type: String }) content = '';
 
+  /**
+   * The document the content belongs to, if any. Owners see its secret
+   * blocks, and relative links and @roll data resolve against it.
+   */
+  @property({ attribute: false }) document?: ClientDocument | null;
+
   enrichedContent: string = "";
 
   async performUpdate() {
-    this.enrichedContent = await foundry.applications.ux.TextEditor.implementation.enrichHTML(this.content);
+    const { document: doc } = this;
+    this.enrichedContent =
+      await foundry.applications.ux.TextEditor.implementation.enrichHTML(
+        this.content,
+        {
+          secrets: doc?.isOwner ?? false,
+          relativeTo: doc ?? undefined,
+          rollData: doc?.getRollData?.(),
+        },
+      );
     return super.performUpdate()
   }
 
@@ -121,7 +136,6 @@ export class EnrichedHTML extends LitElement {
         href="fonts/fontawesome/css/all.min.css"
         media="all"
       />
-      <link rel="stylesheet" href="css/mce.css" media="all" />
       ${unsafeHTML(
       this.enrichedContent
     )}

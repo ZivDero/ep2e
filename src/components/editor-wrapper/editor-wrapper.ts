@@ -1,7 +1,7 @@
 import type { CircularProgress } from '@material/mwc-circular-progress';
 import type { UpdateActions } from '@src/entities/update-store';
+import { NotificationType, notify } from '@src/foundry/foundry-apps';
 import { localize } from '@src/foundry/localization';
-import { LazyGetter } from 'lazy-get-decorator';
 import {
   customElement,
   LitElement,
@@ -10,10 +10,39 @@ import {
   PropertyValues,
   query,
 } from 'lit-element';
-import type { Editor, RawEditorOptions } from 'tinymce';
 import type { EnrichedHTML } from '../enriched-html/enriched-html';
 import styles from './editor-wrapper.scss';
 
+type ProseMirrorEditor = {
+  view: {
+    focus(): void;
+    state: { doc: { content: unknown } };
+  };
+  destroy(): void;
+};
+
+declare global {
+  // Foundry's ProseMirror namespace (a non-deprecated global in V13/V14).
+  const ProseMirror: {
+    defaultSchema: unknown;
+    dom: { serializeString(content: unknown): string };
+    ProseMirrorMenu: { build(schema: unknown, options: object): unknown };
+    ProseMirrorKeyMaps: { build(schema: unknown, options: object): unknown };
+  };
+}
+
+enum EditorState {
+  Viewing,
+  Opening,
+  Editing,
+}
+
+/**
+ * Shows enriched rich text with a toggle to edit it in Foundry's ProseMirror
+ * editor. The editor is mounted in this element's light DOM and slotted in:
+ * Foundry's keybinding focus checks, editor menus and theme CSS only work on
+ * light-DOM editors.
+ */
 @customElement('editor-wrapper')
 export class EditorWrapper extends LitElement {
   static get is() {
@@ -35,132 +64,156 @@ export class EditorWrapper extends LitElement {
 
   @property({ type: String }) heading = '';
 
+  /**
+   * The document the content belongs to, if it is a real one (flag-stored
+   * sub-items are not). Enables relative links, secrets for owners and
+   * image uploads.
+   */
+  @property({ attribute: false }) document?: ClientDocument | null;
+
   @query('.spinner', true) private spinner!: CircularProgress;
 
-  @query('enriched-html') contentArea!: EnrichedHTML;
+  @query('enriched-html') private contentArea?: EnrichedHTML;
 
-  private editor: Editor | null = null;
+  private state = EditorState.Viewing;
 
-  @LazyGetter()
-  static get plugins() {
-    const plugins = new Set(CONFIG.TinyMCE.plugins.split(' '));
-    plugins.add('autoresize').delete('code');
-    return [...plugins];
-  }
+  private editor: ProseMirrorEditor | null = null;
+
+  private editorContainer: HTMLElement | null = null;
 
   disconnectedCallback() {
-    if (this.editor) this.editorSave(this.editor);
+    this.closeEditor({ save: true });
     super.disconnectedCallback();
   }
 
   updated(changedProps: PropertyValues<this>) {
-    if (changedProps.has('disabled') && this.disabled) this.cleanupEditor();
+    if (changedProps.has('disabled') && this.disabled) {
+      if (this.state === EditorState.Opening) this.state = EditorState.Viewing;
+      this.closeEditor({ save: false });
+    }
   }
 
   private get content() {
     return this.updateActions.originalValue();
   }
 
-  private get editorOptions(): RawEditorOptions {
-    const { contentArea } = this;
-
-    return {
-      target: contentArea,
-      setup: this.editorSetup,
-      save_onsavecallback: this.editorSave,
-      target_list: [{ title: 'New page', value: '_blank' }],
-      toolbar:
-        'styleselect bullist numlist image table hr link removeformat code',
-      // autoresize_on_init: false,
-      autoresize_overflow_padding: 10,
-      min_height: 200,
-      max_height: 400,
-      plugins: EditorWrapper.plugins,
-    };
+  private toggleEditor() {
+    if (this.state === EditorState.Editing) this.closeEditor({ save: true });
+    else this.openEditor();
   }
 
-  private editorSetup = (mce: Editor) => {
-    this.editor = mce;
-  };
+  private async openEditor() {
+    if (this.state !== EditorState.Viewing || this.disabled) return;
+    this.state = EditorState.Opening;
+    this.spinner.closed = false;
+    this.requestUpdate();
 
-  private editorSave = (mce: Editor) => {
-    const newContent = mce.getContent();
-    // TODO: Trim tailing empty p tags/newlines
-    this.cleanupEditor();
-    this.save(newContent);
-  };
+    const container = document.createElement('div');
+    container.className = 'editor prosemirror themed theme-dark';
+    container.slot = 'editor';
+    const target = document.createElement('div');
+    target.className = 'editor-content';
+    container.append(target);
+    this.append(container);
 
-  private cleanupEditor() {
-    this.style.overflow = '';
-    if (this.editor) {
-      this.editor.destroy();
+    try {
+      const { defaultSchema, ProseMirrorMenu, ProseMirrorKeyMaps } =
+        ProseMirror;
+      const onSave = () => this.closeEditor({ save: true });
+      const { document: doc } = this;
+      this.editor = (await foundry.applications.ux.ProseMirrorEditor.create(
+        target,
+        this.content,
+        {
+          ...(doc
+            ? {
+                document: doc,
+                fieldName: 'system.description',
+                relativeLinks: true,
+              }
+            : {}),
+          plugins: {
+            menu: ProseMirrorMenu.build(defaultSchema, { onSave }),
+            keyMaps: ProseMirrorKeyMaps.build(defaultSchema, { onSave }),
+          },
+        },
+      )) as ProseMirrorEditor;
+    } catch (error) {
+      console.error(error);
+      container.remove();
+      this.state = EditorState.Viewing;
+      this.spinner.closed = true;
+      this.requestUpdate();
+      notify(NotificationType.Error, localize('editorFailed'));
+      return;
+    }
+
+    if (!this.isConnected || this.state !== EditorState.Opening) {
+      // Closed or disabled while the editor was being created.
+      this.editor?.destroy();
       this.editor = null;
+      this.state = EditorState.Viewing;
+      container.remove();
+      return;
     }
+
+    this.editorContainer = container;
+    this.state = EditorState.Editing;
+    this.spinner.closed = true;
+    this.requestUpdate();
+    this.editor.view.focus();
   }
 
-  private save(content: string) {
-    if (content !== this.content) {
-      try {
-        this.updateContent(content);
-      } catch (error) {
-        console.log(error);
-      }
-    }
+  private closeEditor({ save }: { save: boolean }) {
+    const { editor, editorContainer } = this;
+    if (!editor) return;
+    const content = ProseMirror.dom.serializeString(
+      editor.view.state.doc.content,
+    );
+    this.editor = null;
+    this.editorContainer = null;
+    this.state = EditorState.Viewing;
+    editor.destroy();
+    editorContainer?.remove();
+    if (save) this.save(content);
     this.requestUpdate();
   }
 
-  private updateContent(content: string) {
-    if (this.disabled) return;
-    this.contentArea?.animate({ opacity: [0, 1] }, EditorWrapper.animOptions);
-    this.updateActions.commit(content);
-  }
-
-  private static animOptions = {
-    duration: 200,
-    easing: 'ease-in-out',
-    fill: 'forwards',
-  } as const;
-
-  private toggleEditor(ev: Event) {
-    const clicked = ev.currentTarget as HTMLElement;
-    clicked.style.pointerEvents = 'none';
-    setTimeout(() => (clicked.style.pointerEvents = ''), 250);
-    if (this.editor) {
-      return this.editorSave(this.editor);
+  private save(content: string) {
+    if (content === this.content || this.disabled) return;
+    try {
+      this.contentArea?.animate(
+        { opacity: [0, 1] },
+        { duration: 200, easing: 'ease-in-out', fill: 'forwards' },
+      );
+      this.updateActions.commit(content);
+    } catch (error) {
+      console.log(error);
     }
-
-    const { contentArea, content, editorOptions, spinner } = this;
-    const opacity = [1, 0];
-    const { animOptions } = EditorWrapper;
-    spinner.closed = false;
-    if (!contentArea) return;
-    this.style.overflow = 'hidden';
-    contentArea.animate({ opacity }, animOptions).onfinish = async () => {
-      const editor = await TextEditor.create(editorOptions, content);
-      editor.focus();
-      contentArea.animate({ opacity: opacity.reverse() }, animOptions);
-      this.requestUpdate();
-      spinner.closed = true;
-      this.style.overflow = '';
-    };
   }
 
   render() {
+    const editing = this.state !== EditorState.Viewing;
     return html`
       <header>
         ${this.heading || localize('description')}
         <mwc-icon-button-toggle
           class="toggle"
           slot="actions"
-          ?on=${!!this.editor}
+          ?on=${this.state === EditorState.Editing}
           onIcon="save"
           offIcon="wysiwyg"
-          ?disabled=${this.disabled}
+          ?disabled=${this.disabled || this.state === EditorState.Opening}
           @click=${this.toggleEditor}
         ></mwc-icon-button-toggle>
       </header>
 
-      <enriched-html .content=${this.content}></enriched-html>
+      <enriched-html
+        ?hidden=${editing}
+        .content=${this.content}
+        .document=${this.document}
+      ></enriched-html>
+      <slot name="editor"></slot>
 
       <mwc-circular-progress
         closed

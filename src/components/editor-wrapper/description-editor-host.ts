@@ -6,8 +6,12 @@ import type { EditorWrapper } from './editor-wrapper';
 
 export type DescriptionEditorState = Pick<
   EditorWrapper,
-  'disabled' | 'updateActions'
+  'disabled' | 'updateActions' | 'document'
 >;
+
+/** The stored document behind a proxy, if it has one (flag-stored ones don't). */
+export const documentFromUuid = (uuid: string | null | undefined) =>
+  uuid ? (fromUuidSync(uuid) as ClientDocument | null) : null;
 
 /** The description field every item/actor/ego updater shares. */
 export const descriptionUpdateActions = (updater: unknown) =>

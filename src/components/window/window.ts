@@ -247,7 +247,14 @@ export class SlWindow extends LitElement {
         const { key } = ev as KeyboardEvent;
         if (key === 'Escape') {
           ev.stopPropagation();
-          this.closeButton.focus();
+          // Escape inside the rich text editor is the editor's (e.g. to
+          // dismiss its menus); don't pull focus out of it.
+          const inEditor = ev
+            .composedPath()
+            .some(
+              (el) => el instanceof Element && el.classList.contains('ProseMirror'),
+            );
+          if (!inEditor) this.closeButton.focus();
         } else if (
           key === 'Tab' ||
           key.startsWith('Arrow') ||

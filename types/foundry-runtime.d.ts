@@ -63,6 +63,13 @@ declare global {
   interface Canvas { [key: string]: any }
   interface Macro { [key: string]: any }
   interface ActiveEffect { [key: string]: any }
+
+  /** The parts of foundry.abstract.Document / ClientDocument EP relies on. */
+  interface ClientDocument {
+    uuid: string;
+    isOwner: boolean;
+    getRollData?(): object;
+  }
 }
 
 export {};

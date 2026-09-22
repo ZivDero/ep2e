@@ -114,12 +114,16 @@ mwc-menu {
 
 
 
-* .tox .tox-toolbar-overlord {
-  background-color: transparent !important;
-}
-
-* .tox .tox-toolbar-overlord .tox-toolbar__primary {
-  background-color: transparent !important;
+// Rich text editor that <editor-wrapper> mounts in its light DOM. Core
+// ProseMirror CSS lays out the menu and scrolling content inside it.
+editor-wrapper > .editor.prosemirror {
+  display: flex;
+  flex-direction: column;
+  height: 320px;
+  min-height: 160px;
+  margin: 0.25rem 0.5rem;
+  overflow: hidden;
+  resize: vertical;
 }
 
 .surprise-label {

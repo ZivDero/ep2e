@@ -1,6 +1,7 @@
 import {
   DescriptionEditorHost,
   descriptionUpdateActions,
+  documentFromUuid,
 } from '@src/components/editor-wrapper/description-editor-host';
 import { FormDrawer } from '@src/entities/components/form-layout/entity-form-drawer-mixin';
 import { LitElement } from 'lit-element';
@@ -19,6 +20,7 @@ export abstract class ItemFormBase extends DescriptionEditorHost(
     return {
       disabled: this.disabled,
       updateActions: descriptionUpdateActions(this.item.updater),
+      document: documentFromUuid(this.item.uuid),
     };
   }
 }
