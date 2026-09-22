@@ -114,10 +114,11 @@ Hooks.once('ready', async () => {
   setupSystemSocket();
 
   if (game.user.isGM) {
-    await foundry9to10Migration();
     const { current } = gameSettings.systemMigrationVersion;
 
     if (foundry.utils.isNewerVersion(game.system.version, current)) {
+      // Scans every document, so only run it when the system version changes.
+      await foundry9to10Migration();
       await migrateWorld();
       gameSettings.systemMigrationVersion.update(game.system.version);
     }

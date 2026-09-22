@@ -29,7 +29,7 @@ import { readyCanvas } from './canvas';
 import { isKnownDrop, onlySetDragSource } from './drag-and-drop';
 import type { TokenData } from './foundry-cont';
 import { localize } from './localization';
-import { convertMenuOptions, gmIsConnected } from './misc-helpers';
+import { gmIsConnected } from './misc-helpers';
 import { activeTokenStatusEffects } from './token-helpers';
 
 /**

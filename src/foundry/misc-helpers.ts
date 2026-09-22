@@ -1,7 +1,5 @@
-import { html } from 'lit-html';
 import { pipe, filter, sortBy, first, map, prop, purry } from 'remeda';
 import type { Class, SetRequired } from 'type-fest';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { ActorEP } from '../entities/actor/actor';
 import { UpdateStore } from '@src/entities/update-store';
 import type { DeepPartial } from 'utility-types';
@@ -67,32 +65,6 @@ export const performIntegerSort = <T extends { id: string }>({
     sortKey: 'sort',
   }) as { target: T; update: { sort: number } }[];
   return sorted.map(({ target, update }) => [target, update.sort] as const);
-};
-
-type FoundryOption = {
-  name: string;
-  icon: string; // use unsafeHTML,
-  condition?: ((target: JQuery | HTMLElement) => boolean | number) | boolean;
-  callback: (target: JQuery | HTMLElement) => void;
-};
-
-export const convertMenuOptions = (
-  options: FoundryOption[],
-  targetLi: HTMLElement,
-) => {
-  return (options || []).flatMap(({ name, icon, condition, callback }) =>
-    (
-      typeof condition === 'function'
-        ? condition(targetLi)
-        : condition !== false
-    )
-      ? {
-          label: game.i18n.localize(name),
-          icon: html`${unsafeHTML(icon)}`,
-          callback: () => callback(targetLi),
-        }
-      : [],
-  );
 };
 
 type TokenActor = SetRequired<ActorEP, 'token'>;

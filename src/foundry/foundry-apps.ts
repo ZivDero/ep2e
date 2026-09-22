@@ -1,7 +1,5 @@
 import { reposition } from 'nanopop';
-import { findMatchingElement, repositionIfNeeded } from '@src/utility/dom';
-import { convertMenuOptions } from './misc-helpers';
-import { openMenu } from '@src/open-menu';
+
 
 export enum NotificationType {
   Info = 'info',
@@ -35,17 +33,6 @@ export const positionApp = async <T extends PositionableApp>(
     reposition(relative, element, { position: 'bottom' });
     updateAppPositionFromEl(app, element);
   }
-};
-
-export const confirmFloatingAppPositions = () => {
-  Object.values(ui.windows).forEach(async (v) => {
-    if (!(v instanceof Application)) return;
-    const [el] = v.element || [];
-    if (el instanceof HTMLElement) {
-      const moved = await repositionIfNeeded(el);
-      moved && updateAppPositionFromEl(v, el);
-    }
-  });
 };
 
 const updateAppPositionFromEl = <T extends PositionableApp>(
