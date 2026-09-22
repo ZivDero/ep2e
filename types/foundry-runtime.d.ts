@@ -62,6 +62,7 @@ declare global {
   interface GridLayer { [key: string]: any }
   interface Canvas { [key: string]: any }
   interface Macro { [key: string]: any }
+  interface ActiveEffect { [key: string]: any }
 }
 
 export {};

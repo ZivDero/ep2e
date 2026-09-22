@@ -15,15 +15,9 @@ import { ActorType } from '@src/entities/entity-types';
 import { ItemCreator } from '@src/entities/item/components/item-creator/item-creator';
 import type { ItemDataEvent } from '@src/entities/item/components/item-creator/item-data-event';
 import { ItemEP } from '@src/entities/item/item';
-import type { SceneEP } from '@src/entities/scene';
-import type { UserEP } from '@src/entities/user';
-import { ConditionType, iconToCondition } from '@src/features/conditions';
-import { openMenu } from '@src/open-menu';
-import { findMatchingElement } from '@src/utility/dom';
-import { notEmpty, searchRegExp } from '@src/utility/helpers';
+import { ConditionType } from '@src/features/conditions';
 import { html, render } from 'lit-html';
 import { ifDefined } from 'lit-html/directives/if-defined';
-import { compact, first, mapToObj, noop, pipe } from 'remeda';
 import { stopEvent } from 'weightless';
 import { readyCanvas } from './canvas';
 import { isKnownDrop, onlySetDragSource } from './drag-and-drop';
@@ -45,32 +39,34 @@ const patch = (name: string, apply: () => void) => {
 };
 
 export const overridePrototypes = () => {
-  patch('UserConfig#getData', () => {
-    const { getData } = foundry.applications.sheets.UserConfig.prototype;
-    foundry.applications.sheets.UserConfig.prototype.getData = function () {
-      const original = getData.call(this, {}) as {
-        user: User;
-        actors: ActorEP[];
-        options: unknown;
+  // Only offer EP characters (not sleeves or vehicles) as a user's character.
+  // The V13+ sheet builds the <select> in a widget function it puts on the
+  // render context, so filter that widget's options.
+  patch('UserConfig character choices', () => {
+    const { UserConfig } = foundry.applications.sheets;
+    const { _prepareContext } = UserConfig.prototype;
+    UserConfig.prototype._prepareContext = async function (
+      ...args: unknown[]
+    ) {
+      const context = await _prepareContext.apply(this, args);
+      const widget = context.characterWidget;
+      if (typeof widget !== 'function') return context;
+      const current = this.document?.character?.id;
+      context.characterWidget = (...widgetArgs: unknown[]) => {
+        const element = widget(...widgetArgs);
+        if (element instanceof HTMLElement) {
+          for (const option of element.querySelectorAll<HTMLOptionElement>(
+            'select[name=character] option[value]',
+          )) {
+            const actor = option.value && game.actors.get(option.value);
+            if (actor && actor.type !== ActorType.Character && actor.id !== current) {
+              option.remove();
+            }
+          }
+        }
+        return element;
       };
-      return {
-        ...original,
-        actors: original.actors.filter(
-          (actor) => actor.proxy.type === ActorType.Character,
-        ),
-      };
-    };
-  });
-
-  patch('Game#_onPreventDragstart', () => {
-    const { _onPreventDragstart } = foundry.Game.prototype;
-    foundry.Game.prototype._onPreventDragstart = function (ev: DragEvent) {
-      return pipe(ev.composedPath(), first(), (target) => {
-        return target instanceof Element &&
-          target.getAttribute('draggable') === 'true'
-          ? undefined
-          : _onPreventDragstart.call(this, ev);
-      });
+      return context;
     };
   });
 
@@ -96,18 +92,35 @@ export const overridePrototypes = () => {
       this.effects.bg = this.effects.addChild(new PIXI.Graphics());
       this.effects.overlay = null;
 
-      // Categorize effects
-      const activeEffects = this.actor?.temporaryEffects || [];
-      let hasOverlay = false;
+      this.effects.bg.zIndex = -1;
+
+      // Same selection as core V14: effects whose showIcon setting asks for
+      // an icon. The last overlay effect wins, as in core.
+      const SHOW_ICON = (
+        CONST as unknown as {
+          ACTIVE_EFFECT_SHOW_ICON?: Record<'ALWAYS' | 'CONDITIONAL', number>;
+        }
+      ).ACTIVE_EFFECT_SHOW_ICON;
+      const shown = (this.actor?.appliedEffects ?? []).filter(
+        (effect: ActiveEffect) =>
+          effect.img &&
+          (SHOW_ICON
+            ? effect.showIcon === SHOW_ICON.ALWAYS ||
+              (effect.showIcon === SHOW_ICON.CONDITIONAL && effect.isTemporary)
+            : effect.isTemporary),
+      ) as ActiveEffect[];
+      const overlay = [...shown]
+        .reverse()
+        .find((effect) => effect.getFlag('core', 'overlay'));
 
       // Draw effects
       const promises = [];
-      for (const effect of activeEffects) {
-        if (!effect.img) continue;
-        if (effect.getFlag('core', 'overlay') && !hasOverlay) {
-          promises.push(this._drawOverlay(effect.img, effect.tint));
-          hasOverlay = true;
-        } else promises.push(this._drawEffect(effect.img, effect.tint));
+      for (const effect of shown) {
+        promises.push(
+          effect === overlay
+            ? this._drawOverlay(effect.img, effect.tint)
+            : this._drawEffect(effect.img, effect.tint),
+        );
       }
 
       const effects = activeTokenStatusEffects(this);
@@ -115,6 +128,7 @@ export const overridePrototypes = () => {
         promises.push(this._drawEffect(iconPath, null));
       }
       await Promise.allSettled(promises);
+      this.effects.sortChildren();
 
       this.effects.renderable = true;
       //@ts-ignore
@@ -133,10 +147,8 @@ export const overridePrototypes = () => {
   patch('TokenHUD', () => {
     const { TokenHUD } = foundry.applications.hud;
 
-    // @ts-expect-error
     const { getData: getTokenData, _getStatusEffectChoices, _prepareContext } = TokenHUD.prototype;
 
-    // @ts-expect-error
     TokenHUD.prototype._prepareContext = async function (options: unknown) {
       const context = (await _prepareContext.call(this, options)) as {
         canToggleCombat: boolean;
@@ -149,7 +161,6 @@ export const overridePrototypes = () => {
       return context;
     };
 
-    // @ts-expect-error
     TokenHUD.DEFAULT_OPTIONS.actions.combat = function (event: Event) {
       const button = (event.currentTarget as HTMLElement).querySelector("button[data-action='combat']");
       event.preventDefault();
@@ -234,25 +245,14 @@ export const overridePrototypes = () => {
     };
   });
 
-  patch('JournalSheet.defaultOptions', () => {
-    const { defaultOptions: journalSheetOptions } = foundry.appv1.sheets.JournalSheet;
-    Object.defineProperty(foundry.appv1.sheets.JournalSheet, 'defaultOptions', {
-      enumerable: true,
-      get() {
-        return { ...(journalSheetOptions as {}), width: 620 };
-      },
-    });
-  });
-
   patch('CombatTracker rendering', () => {
-    const { _replaceHTML } = foundry.applications.sidebar.tabs.CombatTracker.prototype;
-    //@ts-expect-error
-    foundry.applications.sidebar.tabs.CombatTracker.prototype._renderHTML = () => { };
-    foundry.applications.sidebar.tabs.CombatTracker.prototype._replaceHTML = function (
+    const { CombatTracker } = foundry.applications.sidebar.tabs;
+    const { _replaceHTML } = CombatTracker.prototype;
+    CombatTracker.prototype._renderHTML = () => { };
+    CombatTracker.prototype._replaceHTML = function (
       ...args: Parameters<typeof _replaceHTML>
     ) {
       const element = args[1] as HTMLElement;
-      // @ts-expect-error
       const options = args[2] as { isFirstRender: boolean }
       if (options.isFirstRender) {
         render(
@@ -263,42 +263,25 @@ export const overridePrototypes = () => {
       }
       // _replaceHTML.apply(this, args);
     };
+    // Core's _onRender looks up its own tracker markup, which <combat-view>
+    // replaces, and throws on turn changes. Skip its part-specific work.
+    const { _onRender } = CombatTracker.prototype;
+    CombatTracker.prototype._onRender = function (
+      context: unknown,
+      options: object,
+    ) {
+      return _onRender.call(this, context, { ...options, parts: [] });
+    };
   });
 
-  patch('ChatMessage speaker', () => {
-    ChatMessage._getSpeakerFromUser = function ({
-      scene,
-      user,
-      alias,
-    }: {
-      scene: SceneEP | null;
-      user: UserEP;
-      alias?: string;
-    }) {
-      return {
-        scene: scene?.id ?? readyCanvas()?.scene?.id,
-        actor: null,
-        token: null,
-        alias: alias || user.name,
-      };
-    };
-
-    ChatMessage._getSpeakerFromActor = function ({
-      scene,
-      actor,
-      alias,
-    }: {
-      scene: SceneEP | null;
-      actor: ActorEP;
-      alias?: string;
-    }) {
-      return {
-        scene: scene?.id ?? readyCanvas()?.scene?.id,
-        actor: actor.id,
-        token: null,
-        alias: alias || actor.name,
-      };
-    };
+  // V14 can move apps into separate browser windows. EP's Lit elements and
+  // its menus, tooltips and windows are bound to the main document, so keep
+  // the apps that host EP content in the main window.
+  patch('Disable detaching apps with EP content', () => {
+    const { tabs, apps } = foundry.applications.sidebar;
+    for (const app of [tabs.CombatTracker, tabs.ChatLog, apps.ChatPopout]) {
+      if (app) app.prototype._canDetach = () => false;
+    }
   });
 
   patch('DragDrop#_handleDragStart', () => {
@@ -326,39 +309,38 @@ export const overridePrototypes = () => {
 
     const closeCreator = () => closeWindow(ItemCreator);
 
-    foundry.applications.sidebar.tabs.ItemDirectory.prototype._onCreateEntry = async function (ev: Event) {
-      stopEvent(ev);
+    // V13+ calls _onCreateEntry(event, target) from the createEntry action;
+    // target is the clicked button, inside the folder row when there is one.
+    const folderOf = (target: HTMLElement) =>
+      target.closest<HTMLElement>('[data-folder-id]')?.dataset['folderId'];
 
-      if (ev.currentTarget instanceof HTMLElement) {
+    foundry.applications.sidebar.tabs.ItemDirectory.prototype._onCreateEntry =
+      async function (ev: Event, target: HTMLElement) {
+        stopEvent(ev);
         openWindow({
           key: ItemCreator,
           content: html` <item-creator
             showFolders
             @close-creator=${closeCreator}
             @item-data=${itemCreate}
-            folder=${ifDefined(ev.currentTarget.dataset['folder'])}
+            folder=${ifDefined(folderOf(target))}
           ></item-creator>`,
           name: `${localize('item')} ${localize('creator')}`,
-          adjacentEl: ev.currentTarget,
+          adjacentEl: target,
         });
-      }
-    };
+      };
 
-    foundry.applications.sidebar.tabs.ActorDirectory.prototype._onCreateEntry = async function (ev: Event) {
-      stopEvent(ev);
-
-      if (ev.currentTarget instanceof HTMLElement) {
+    foundry.applications.sidebar.tabs.ActorDirectory.prototype._onCreateEntry =
+      async function (ev: Event, target: HTMLElement) {
+        stopEvent(ev);
         openWindow({
           key: ActorCreator,
           content: html`
-            <actor-creator
-              folder=${ifDefined(ev.currentTarget.dataset['folder'])}
-            ></actor-creator>
+            <actor-creator folder=${ifDefined(folderOf(target))}></actor-creator>
           `,
           name: `${localize('actor')} ${localize('creator')}`,
-          adjacentEl: ev.currentTarget,
+          adjacentEl: target,
         });
-      }
-    };
+      };
   });
 };

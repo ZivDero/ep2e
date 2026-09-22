@@ -264,6 +264,7 @@ declare global {
       sidebar: {
         apps: {
           Compendium: typeof Compendium
+          ChatPopout?: any
         }
         tabs: {
           ChatLog: typeof ChatLog,
