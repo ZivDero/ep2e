@@ -1,9 +1,8 @@
 {
   "_id": "k2GyQyHMvfou3Ef7",
   "name": "Flash Suppressor",
-  "permission": {
-    "default": 0,
-    "qHi89sFcK4gHlOPd": 3
+  "ownership": {
+    "default": 0
   },
   "folder": "",
   "flags": {
@@ -11,8 +10,27 @@
       "sourceId": "JournalEntry.pbf639YM7wpVO95d"
     }
   },
-  "content": "<p>This device obscures the muzzle flash on firearms, applying a -30 modifier to Perceive Tests to locate a firing weapon by its flash.</p>",
-  "pages": [],
+  "pages": [
+    {
+      "_id": "gb5I01jyMlLQnnfz",
+      "name": "Flash Suppressor",
+      "type": "text",
+      "title": {
+        "show": false,
+        "level": 1
+      },
+      "text": {
+        "content": "<p>This device obscures the muzzle flash on firearms, applying a -30 modifier to Perceive Tests to locate a firing weapon by its flash.</p>",
+        "format": 1
+      },
+      "sort": 0,
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "_key": "!journal.pages!k2GyQyHMvfou3Ef7.gb5I01jyMlLQnnfz"
+    }
+  ],
   "categories": [],
   "_key": "!journal!k2GyQyHMvfou3Ef7"
 }

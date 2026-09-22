@@ -1,9 +1,8 @@
 {
   "_id": "V7gAlojJSHmwvLpa",
   "name": "Extended Magazine",
-  "permission": {
-    "default": 0,
-    "qHi89sFcK4gHlOPd": 3
+  "ownership": {
+    "default": 0
   },
   "folder": "",
   "flags": {
@@ -11,8 +10,27 @@
       "sourceId": "JournalEntry.REhmLDP342r3aECd"
     }
   },
-  "content": "<p>This ammunition case has an enhanced capacity. Increase the weapon’s ammo capacity by +50%. This is only available for firearms and seekers.</p>",
-  "pages": [],
+  "pages": [
+    {
+      "_id": "rwlFzDtFN9OVah1u",
+      "name": "Extended Magazine",
+      "type": "text",
+      "title": {
+        "show": false,
+        "level": 1
+      },
+      "text": {
+        "content": "<p>This ammunition case has an enhanced capacity. Increase the weapon’s ammo capacity by +50%. This is only available for firearms and seekers.</p>",
+        "format": 1
+      },
+      "sort": 0,
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "_key": "!journal.pages!V7gAlojJSHmwvLpa.rwlFzDtFN9OVah1u"
+    }
+  ],
   "categories": [],
   "_key": "!journal!V7gAlojJSHmwvLpa"
 }

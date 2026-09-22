@@ -1,9 +1,8 @@
 {
   "_id": "oH8lofdKuy23XuxM",
   "name": "Silencer/Sound Suppressor",
-  "permission": {
-    "default": 0,
-    "qHi89sFcK4gHlOPd": 3
+  "ownership": {
+    "default": 0
   },
   "folder": "",
   "flags": {
@@ -11,8 +10,27 @@
       "sourceId": "JournalEntry.AtxKpHcByn9WflM4"
     }
   },
-  "content": "<p>This barrel-mounted accessory reduces the sound of a firearm’s discharge (they cannot be used on railguns). Apply a -30 modifier on hearing-based Perceive Tests to hear or locate the gun’s firing.</p>",
-  "pages": [],
+  "pages": [
+    {
+      "_id": "ZMo0KeEwBXQt7vX6",
+      "name": "Silencer/Sound Suppressor",
+      "type": "text",
+      "title": {
+        "show": false,
+        "level": 1
+      },
+      "text": {
+        "content": "<p>This barrel-mounted accessory reduces the sound of a firearm’s discharge (they cannot be used on railguns). Apply a -30 modifier on hearing-based Perceive Tests to hear or locate the gun’s firing.</p>",
+        "format": 1
+      },
+      "sort": 0,
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "_key": "!journal.pages!oH8lofdKuy23XuxM.ZMo0KeEwBXQt7vX6"
+    }
+  ],
   "categories": [],
   "_key": "!journal!oH8lofdKuy23XuxM"
 }

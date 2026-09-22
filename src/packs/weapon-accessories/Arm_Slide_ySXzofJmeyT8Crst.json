@@ -1,9 +1,8 @@
 {
   "_id": "ySXzofJmeyT8Crst",
   "name": "Arm Slide",
-  "permission": {
-    "default": 0,
-    "qHi89sFcK4gHlOPd": 3
+  "ownership": {
+    "default": 0
   },
   "folder": "",
   "flags": {
@@ -11,8 +10,27 @@
       "sourceId": "JournalEntry.HBc1IDpdQVXQUnBp"
     }
   },
-  "content": "<p>This slide-mount can hold a one-handed weapon under your sleeve, pushing the weapon into your hand with an electronic signal or specific sequence of arm movements. You can draw the weapon and attack with a single complex action.</p>",
-  "pages": [],
+  "pages": [
+    {
+      "_id": "GpaXFLgkSjnqlP3Y",
+      "name": "Arm Slide",
+      "type": "text",
+      "title": {
+        "show": false,
+        "level": 1
+      },
+      "text": {
+        "content": "<p>This slide-mount can hold a one-handed weapon under your sleeve, pushing the weapon into your hand with an electronic signal or specific sequence of arm movements. You can draw the weapon and attack with a single complex action.</p>",
+        "format": 1
+      },
+      "sort": 0,
+      "ownership": {
+        "default": -1
+      },
+      "flags": {},
+      "_key": "!journal.pages!ySXzofJmeyT8Crst.GpaXFLgkSjnqlP3Y"
+    }
+  ],
   "categories": [],
   "_key": "!journal!ySXzofJmeyT8Crst"
 }
