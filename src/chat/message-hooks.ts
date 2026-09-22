@@ -54,8 +54,8 @@ Hooks.once('ep-ready', () => {
 });
 
 const scrollBottom = () => {
-  ui.chat.scrollBottom();
-  (ui.chat._popout as ChatLog | undefined)?.scrollBottom();
+  // Also scrolls the chat popout, if open.
+  ui.chat.scrollBottom({ popout: true });
 };
 
 export const onChatMessageRender = (message: ChatMessageEP, el: HTMLElement) => {

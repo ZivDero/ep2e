@@ -297,9 +297,8 @@ Hooks.once('ready', async () => {
 
     extraInfo.append(extraChatControlsFrag);
 
-    document
-      .getElementById('ui-top')
-      ?.insertBefore(extraInfo, document.getElementById('loading'));
+    const uiTop = document.getElementById('ui-top');
+    uiTop?.insertBefore(extraInfo, uiTop.querySelector(':scope > #loading'));
 
 
     if (game.user.isGM) {
@@ -328,6 +327,7 @@ Hooks.once('ready', async () => {
     render(
       html`
         <mwc-button
+          class="ep-compendium-search"
           style="width: calc(100% - 0.5rem); margin: 0.25rem; line-height: 1;"
           label=${localize('search')}
           icon="search"
@@ -346,14 +346,16 @@ Hooks.once('ready', async () => {
     return frag;
   };
 
-  const trackerAnchor = document.querySelector(
-    "#sidebar-tabs > a.item[data-tab='combat']",
-  );
-
-  trackerAnchor?.addEventListener('contextmenu', (ev) => {
-    ev.stopPropagation();
-    ev.preventDefault();
-    openWindow(
+  // Right-clicking the combat sidebar tab opens the EP combat view window
+  // instead of core's tab popout. Delegated, since the sidebar re-renders.
+  document.addEventListener(
+    'contextmenu',
+    (ev) => {
+      const target = ev.target instanceof Element ? ev.target : null;
+      if (!target?.closest("#sidebar-tabs [data-tab='combat']")) return;
+      ev.stopPropagation();
+      ev.preventDefault();
+      openWindow(
       {
         key: CombatView,
         content: html`<combat-view></combat-view>`,
@@ -361,32 +363,24 @@ Hooks.once('ready', async () => {
       },
       { resizable: ResizeOption.Both },
     );
-  });
+    },
+    { capture: true },
+  );
 
-  document
-    .querySelector('#compendium .directory-footer')
-    ?.append(compendiumSearchButton());
+  const addCompendiumSearchButton = (root: ParentNode | null | undefined) => {
+    const footer = root?.querySelector('.directory-footer');
+    if (footer && !footer.querySelector('.ep-compendium-search')) {
+      footer.append(compendiumSearchButton());
+    }
+  };
+
+  addCompendiumSearchButton(document.getElementById('compendium'));
 
   applicationHook({
-    app: foundry.applications.sidebar.tabs.CompendiumDirectory,
+    app: 'CompendiumDirectory',
     hook: 'on',
     event: 'render',
-    callback: (dir, el) => {
-      el?.querySelector('.directory-footer')?.append(compendiumSearchButton());
-    },
-  });
-
-  applicationHook({
-    app: foundry.applications.sidebar.tabs.ChatLog,
-    hook: 'on',
-    event: 'render',
-    callback: (log) => {
-      if (log.popOut) {
-        requestAnimationFrame(() => {
-          log.setPosition();
-        });
-      }
-    },
+    callback: (_, el) => addCompendiumSearchButton(el),
   });
 
 
@@ -433,18 +427,20 @@ window.addEventListener(
     return (
       target instanceof HTMLLIElement &&
       target.matches(`.document.actor, .document.item`) &&
-      target.querySelector<HTMLElement>('.document-name')?.click()
+      target.querySelector<HTMLElement>('.entry-name')?.click()
     );
   },
   { capture: true },
 );
 
-for (const app of [Dialog, foundry.applications.sheets.FolderConfig, foundry.applications.apps.FilePicker.implementation]) {
+// Open dialogs and folder/file pickers next to the element that was clicked.
+for (const app of ['DialogV2', 'FolderConfig', 'FilePicker']) {
   applicationHook({
     app,
     hook: 'on',
     event: 'render',
-    callback: (dialog) => {
+    callback: (dialog, _element, _context, options) => {
+      if (!options?.isFirstRender) return;
       const closestItem = lastClicked?.closest<HTMLElement>('.document');
       const relative = closestItem || lastClicked;
       if (relative?.isConnected) positionApp(dialog, relative);
@@ -466,7 +462,7 @@ const isItem = (entity: ItemEP | ActorEP): entity is ItemEP => {
 };
 
 applicationHook({
-  app: foundry.applications.sidebar.apps.Compendium,
+  app: 'Compendium',
   hook: 'on',
   event: 'render',
   callback: async (compendium, el) => {
@@ -510,7 +506,7 @@ applicationHook({
 });
 
 if (true) {
-  for (const app of [foundry.applications.sidebar.tabs.ActorDirectory, foundry.applications.sidebar.tabs.ItemDirectory]) {
+  for (const app of ['ActorDirectory', 'ItemDirectory']) {
     applicationHook({
       app,
       hook: 'on',
@@ -519,7 +515,7 @@ if (true) {
         return list?.querySelectorAll<HTMLLIElement>('.document').forEach((listItem) => {
           const { entryId } = listItem.dataset;
           const doc = entryId &&
-            game[app === foundry.applications.sidebar.tabs.ActorDirectory ? 'actors' : 'items'].get(entryId);
+            game[app === 'ActorDirectory' ? 'actors' : 'items'].get(entryId);
           if (!doc)
             return;
 
@@ -570,7 +566,7 @@ mutateEntityHook({
   callback: (item) => {
     if (!item.actor && !item.compendium) {
       const sidebarListItem = document.querySelector(
-        `.sidebar-tab.directory .directory-item.item[data-document-id="${item.id}"]`,
+        `.sidebar-tab.directory .directory-item.item[data-entry-id="${item.id}"]`,
       );
       if (sidebarListItem instanceof HTMLElement) {
         applyFullItemInfo(item, sidebarListItem);

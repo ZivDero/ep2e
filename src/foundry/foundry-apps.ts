@@ -1,6 +1,5 @@
 import { reposition } from 'nanopop';
 
-
 export enum NotificationType {
   Info = 'info',
   Warn = 'warn',
@@ -15,33 +14,23 @@ export const notify = (
   ui.notifications.notify(message, type, { permanent });
 };
 
-type PositionableApp = Pick<Application, 'element' | 'position'>;
-
-export const positionApp = async <T extends PositionableApp>(
-  app: T,
-  relative: HTMLElement,
-) => {
-  const rect = relative.getBoundingClientRect();
-  if (!rect.top && !rect.left) return;
-  let tries = 0;
-  while (tries < 200 && !app.element?.[0]?.isConnected) {
-    await new Promise((r) => requestAnimationFrame(r));
-    ++tries;
-  }
-  const [element] = (app.element || []) as JQuery;
-  if (element instanceof HTMLElement) {
-    reposition(relative, element, { position: 'bottom' });
-    updateAppPositionFromEl(app, element);
-  }
+type PositionableApp = {
+  element: HTMLElement;
+  setPosition(position: { left?: number; top?: number }): unknown;
 };
 
-const updateAppPositionFromEl = <T extends PositionableApp>(
-  app: T,
-  el: HTMLElement,
-) => {
-  const { top, left } = el.getBoundingClientRect();
-  app.position.left = left;
-  app.position.top = top - 3;
+/**
+ * Move an ApplicationV2 window next to the element that opened it. Call from
+ * a first-render hook: the app's element is already in the document then.
+ */
+export const positionApp = (app: PositionableApp, relative: HTMLElement) => {
+  const rect = relative.getBoundingClientRect();
+  if (!rect.top && !rect.left) return;
+  const { element } = app;
+  if (!(element instanceof HTMLElement) || !element.isConnected) return;
+  reposition(relative, element, { position: 'bottom' });
+  const { top, left } = element.getBoundingClientRect();
+  app.setPosition({ left, top: top - 3 });
 };
 
 const pickers = new WeakMap<
