@@ -2,13 +2,36 @@
 
 ## [2.0.0] - Unreleased
 
-Foundry V14 release. This version requires Foundry V14 and no longer supports V13; stay on 1.3.x for V13 worlds. Maintained as a fork at https://github.com/ZivDero/ep2e (system id is still `ep2e`, so existing worlds keep working after switching the install link).
+Foundry V14 release. This version requires Foundry V14 and no longer supports V13; stay on 1.3.x for V13 worlds. Maintained as a fork at https://github.com/ZivDero/ep2e (the system id is still `ep2e`, so existing worlds keep working after switching the install link). Back up worlds before opening them in V14: the migration is one-way.
+
+### Changed
 
 - Update for Foundry V14 (targets 14.368)
-- Rich text descriptions use Foundry's ProseMirror editor (V14 removed TinyMCE)
-- Fix rolls failing to post to chat, ranged/thrown/psi tests failing with targets selected, and the combat view's defeated toggle
-- Players no longer see GM-only compendiums in the sleeve picker
-- Fix creating actors and items through the EP creators
+- Area effects (explosives, area-effect chat cards, movement preview) are placed as Scene Regions, which replaced measured templates in V14. Targets inside an area are now whatever tokens Foundry considers inside the region. Areas placed before upgrading may lose their edit button; remove and place them again.
+- Description editing uses Foundry's ProseMirror editor (V14 removed TinyMCE). Ctrl+S and the editor menu save.
+- Chat visibility follows V14's message modes; the in-character mode posts publicly
+- Token ranges are measured as a straight line between token centres, including elevation, and use the scene's grid distance for the large-token correction
+- The combat tracker, chat log and chat pop-outs can't be detached into separate V14 windows
+
+### Fixed
+
+- Rolls failing to post to chat
+- Ranged, thrown and psi tests failing with targets selected
+- Marking a combatant defeated in the combat view (now applies the defeated overlay)
+- Conditions missing icons and names in the Token HUD
+- Creating actors and items with the EP creators, psi items without stored influences, and onboard ALIs
+- Players seeing GM-only compendiums in the sleeve picker
+- Players not getting area placement controls
+- Secret blocks in descriptions hidden from their owners and the GM
+- Weapon Accessories compendium entries opening empty
+- Dropping an item folder onto a character sheet
+- Dragging a roll out of chat
+- Combat log timestamps
+- Creating actors and items into sidebar folders
+- The middle-click tool menu's toggles
+- Core code editors using the system's monospace font
+- A memory leak from drop zones on closed sheets
+- World migrations skipping unlinked tokens
 - A Foundry core change now disables only the affected feature instead of preventing the system from loading
 - Smaller release download (compendium source files are no longer included)
 
