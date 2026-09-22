@@ -41,6 +41,7 @@ import {
   handleDrop,
   setDragDrop,
 } from '@src/foundry/drag-and-drop';
+import { canPlaceAreas } from '@src/foundry/canvas';
 import { localize } from '@src/foundry/localization';
 import { userCan } from '@src/foundry/misc-helpers';
 import { rollFormula } from '@src/foundry/rolls';
@@ -633,7 +634,7 @@ export class CharacterViewAlt extends CharacterViewBase {
     } = this.character;
     const { filteredMotivations, settings } = ego;
 
-    const canPlace = userCan('TEMPLATE_CREATE');
+    const canPlace = canPlaceAreas();
 
     return html`<sl-dropzone
       ?disabled=${disabled}
@@ -927,7 +928,7 @@ export class CharacterViewAlt extends CharacterViewBase {
   }
 
   private renderVehicle(vehicle: NonNullable<Character['vehicle']>) {
-    const canPlace = userCan('TEMPLATE_CREATE');
+    const canPlace = canPlaceAreas();
 
     return html` <div class="vehicle">
       <span>

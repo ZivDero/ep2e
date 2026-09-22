@@ -4,18 +4,17 @@ import { UseWorldTime } from '@src/components/mixins/world-time-mixin';
 import { AreaEffectType } from '@src/data-enums';
 import { createLiveTimeState, prettyMilliseconds } from '@src/features/time';
 import {
-  createTemporaryMeasuredTemplate,
+  AreaTemplateData,
   deletePlacedTemplate,
   editPlacedTemplate,
-  MeasuredTemplateData,
-  placeMeasuredTemplate,
+  placeAreaTemplate,
+  placedTemplateExists,
   readyCanvas,
 } from '@src/foundry/canvas';
 import { localize } from '@src/foundry/localization';
 import { customElement, html, property } from 'lit-element';
 import mix from 'mix-with/lib';
 import { noop } from 'remeda';
-import type { SetOptional } from 'type-fest';
 import { MessageElement } from '../message-element';
 import styles from './message-area-effect.scss';
 
@@ -78,10 +77,7 @@ export class MessageAreaEffect extends mix(MessageElement).with(UseWorldTime) {
     );
   }
 
-  private get templateData(): SetOptional<
-    Pick<MeasuredTemplateData, 't' | 'distance' | 'angle'>,
-    'angle'
-  > {
+  private get templateData(): AreaTemplateData {
     const { areaEffect } = this;
     switch (areaEffect.type) {
       case AreaEffectType.Uniform:
@@ -108,15 +104,8 @@ export class MessageAreaEffect extends mix(MessageElement).with(UseWorldTime) {
     }
   }
 
-  private async setTemplate(ev: MouseEvent) {
-    const center = readyCanvas()?.scene._viewPosition ?? { x: 0, y: 0 };
-    const template = createTemporaryMeasuredTemplate({
-      ...center,
-      ...this.templateData,
-    });
-    if (!template) return;
-
-    const templateIDs = await placeMeasuredTemplate(template);
+  private async setTemplate() {
+    const templateIDs = await placeAreaTemplate(this.templateData);
     if (templateIDs) this.getUpdater('areaEffect').commit({ templateIDs });
   }
 
@@ -150,7 +139,8 @@ export class MessageAreaEffect extends mix(MessageElement).with(UseWorldTime) {
             <div class="template">
               ${areaEffect.templateIDs
                 ? html`
-                    ${readyCanvas()?.scene.id === areaEffect.templateIDs.sceneId
+                    ${readyCanvas()?.scene.id === areaEffect.templateIDs.sceneId &&
+                    placedTemplateExists(areaEffect.templateIDs)
                       ? html`
                           <mwc-icon-button
                             icon="edit"

@@ -6,8 +6,7 @@ import type { Psi } from '@src/entities/item/proxies/psi';
 import type { ConditionType } from '@src/features/conditions';
 import { poolActionOptions } from '@src/features/pools';
 import {
-  createTemporaryMeasuredTemplate,
-  placeMeasuredTemplate,
+  placeAreaTemplate,
   readyCanvas,
 } from '@src/foundry/canvas';
 import { DropType, handleDrop, isKnownDrop } from '@src/foundry/drag-and-drop';
@@ -127,19 +126,9 @@ export abstract class CharacterViewBase extends LitElement {
   protected async placeMovementPreviewTemplate(range: number) {
     const token = getTokenPlaceable(this.token, this.character.actor);
 
-    const center =
-      token && token?.scene === readyCanvas()?.scene
-        ? token.center
-        : { x: 0, y: 0 };
-
-    const template = createTemporaryMeasuredTemplate({
-      ...center,
-      t: 'circle',
-      distance: range,
-    });
-    if (template) {
-      placeMeasuredTemplate(template, !!token);
-    }
+    const origin =
+      token && token?.scene === readyCanvas()?.scene ? token.center : null;
+    placeAreaTemplate({ t: 'circle', distance: range }, { origin });
   }
 
   protected openPoolMenu(ev: MouseEvent & { currentTarget: HTMLElement }) {

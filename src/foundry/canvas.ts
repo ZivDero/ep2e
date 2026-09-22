@@ -1,234 +1,185 @@
 import { ActorType } from '@src/entities/entity-types';
 import { overlay } from '@src/init';
-import { throttleFn } from '@src/utility/decorators';
-import { notEmpty } from '@src/utility/helpers';
-import { compact, forEach, intersection, pick, pipe } from 'remeda';
-import type { SetOptional } from 'type-fest';
+import { NotificationType, notify } from './foundry-apps';
+import { localize } from './localization';
 import type { ValuesType } from 'utility-types';
-import { stopEvent } from 'weightless';
 import type { SceneEP } from '../entities/scene';
 import type { CanvasLayers } from './foundry-cont';
 
-export type MeasuredTemplateType =
-  keyof typeof CONFIG['MeasuredTemplate']['types'];
-
-export type MeasuredTemplateData = {
-  t: MeasuredTemplateType;
-  user: string;
-  x: number;
-  y: number;
-  direction: number;
-  angle?: number;
+/** An area effect's shape, in scene distance units and degrees. */
+export type AreaTemplateData = {
+  t: 'circle' | 'cone';
   distance: number;
-  borderColor?: string;
-  fillColor: string;
-  texture?: string;
-  _id?: string;
+  /** Cone opening, in degrees. */
+  angle?: number;
+  /** Cone direction, in degrees (0 points right). */
+  direction?: number;
 };
 
+/**
+ * A placed area on a scene. Since V14 these are Region documents; the
+ * `templateId` name is kept because it is stored in chat and item flags.
+ */
 export type PlacedTemplateIDs = {
   templateId: string;
   sceneId: string;
 };
 
-export const createTemporaryMeasuredTemplate = ({
-  user = game.user.id,
-  fillColor = game.user.color,
-  direction = 0,
-  x = 0,
-  y = 0,
-  ...data
-}: SetOptional<
-  Omit<MeasuredTemplateData, '_id'>,
-  'user' | 'fillColor' | 'direction' | 'x' | 'y'
->) => {
-  const canvas = readyCanvas();
-  if (!canvas?.scene) return null;
+const DEFAULT_CONE_ANGLE = 53.13;
 
-  const doc = new MeasuredTemplateDocument(
-    {
-      ...data,
-      user,
-      fillColor,
-      direction,
-      x,
-      y,
-    },
-    { parent: canvas.scene },
-  );
-  return new MeasuredTemplate(doc);
+type Point = { x: number; y: number };
+
+type ShapeSource = {
+  type: string;
+  x: number;
+  y: number;
+  radius: number;
+  angle?: number;
+  rotation?: number;
+  curvature?: string;
 };
 
-export const placeMeasuredTemplate = (
-  template: MeasuredTemplate,
-  pan = true,
-) => {
-  const canvas = readyCanvas();
-  if (!canvas) return null;
+const distancePixels = (scene: SceneEP) => scene.grid.size / scene.grid.distance;
 
-  return new Promise<PlacedTemplateIDs | null>(async (resolve) => {
-    const { activeLayer: originalLayer, stage, grid, scene, tokens } = canvas;
-    const { view } = canvas.app;
-    const controlled =
-      originalLayer === tokens ? originalLayer.controlled : null;
-
-    (await template.draw())?.layer.preview // .activate()
-      ?.addChild(template as unknown as import('pixi.js').DisplayObject);
-    overlay.faded = true;
-
-    const moveTemplate = throttleFn(
-      (ev: typeof PIXI['InteractionEvent']) => {
-        const center = ev.data.getLocalPosition(template.layer);
-        const { x, y } = grid.getSnappedPosition(center.x, center.y, 2);
-        template.document.x = x;
-        template.document.y = y;
-        template.refresh();
-      },
-      20,
-      true,
-    );
-
-    stage.on('mousemove', moveTemplate).on('mousedown', createTemplate);
-    view.addEventListener('contextmenu', cleanup);
-    view.addEventListener('wheel', rotateTemplate, { passive: false });
-    window.addEventListener('keydown', cancelOrSave, { capture: true });
-    pan && canvas.pan(template.center);
-
-    function cleanup(ev?: Event) {
-      stage.off('mousemove', moveTemplate).off('mousedown', createTemplate);
-      view.removeEventListener('contextmenu', cleanup);
-      view.removeEventListener('wheel', rotateTemplate);
-      window.removeEventListener('keydown', cancelOrSave, { capture: true });
-      template.layer.preview?.removeChildren();
-      template.destroy({});
-      originalLayer.activate();
-      overlay.faded = false;
-      if (controlled && originalLayer === tokens) {
-        pipe(
-          controlled,
-          intersection(originalLayer.placeables),
-          forEach((token) => token.control({ releaseOthers: false })),
-        );
+const shapeData = (
+  { t, distance, angle, direction = 0 }: AreaTemplateData,
+  { x, y }: Point,
+  pixelsPerUnit: number,
+): ShapeSource => {
+  const radius = distance * pixelsPerUnit;
+  return t === 'cone'
+    ? {
+        type: 'cone',
+        x,
+        y,
+        radius,
+        angle: angle ?? DEFAULT_CONE_ANGLE,
+        rotation: direction,
+        curvature: 'round',
       }
-      if (ev) resolve(null);
-    }
-
-    function cancelOrSave(ev: KeyboardEvent) {
-      if (['Escape', 'Enter'].includes(ev.key)) stopEvent(ev);
-      ev.key === 'Escape'
-        ? cleanup(ev)
-        : ev.key === 'Enter' && createTemplate();
-    }
-
-    async function createTemplate(ev?: import('pixi.js').InteractionEvent) {
-      ev?.stopPropagation();
-      cleanup();
-      const [savedTemplateData] = await scene.createEmbeddedDocuments(
-        MeasuredTemplate.embeddedName,
-        [
-          {
-            ...template.document.toJSON(),
-            ...grid.getSnappedPosition(
-              template.document.x,
-              template.document.y,
-              2,
-            ),
-          },
-        ],
-      );
-      resolve(
-        savedTemplateData?.id
-          ? {
-            templateId: savedTemplateData.id,
-            sceneId: scene.id,
-          }
-          : null,
-      );
-    }
-
-    function rotateTemplate(ev: WheelEvent) {
-      if (ev.ctrlKey) return;
-      ev.stopPropagation();
-      const delta = grid.type > CONST.GRID_TYPES.SQUARE ? 30 : 15;
-      const snap = ev.shiftKey ? delta : 5;
-      template.document.direction += snap * Math.sign(ev.deltaY);
-      template.refresh();
-    }
-  });
+    : { type: 'circle', x, y, radius };
 };
 
-export const deletePlacedTemplate = (
+/** Whether this user may place area templates (Regions since V14). */
+export const canPlaceAreas = () => game.user.can('REGION_CREATE');
+
+let placing = false;
+
+/**
+ * Let the user place an area on the current scene: it follows the pointer,
+ * the wheel rotates it, left-click places it and right-click or Escape
+ * cancels. Starts at `origin` (panning there) or the view center.
+ */
+export const placeAreaTemplate = async (
+  data: AreaTemplateData,
+  { origin }: { origin?: Point | null } = {},
+): Promise<PlacedTemplateIDs | null> => {
+  const canvas = readyCanvas();
+  if (!canvas || placing) return null;
+  if (game.paused && !game.user.isGM) {
+    notify(NotificationType.Warn, localize('placeWhilePaused'));
+    return null;
+  }
+
+  const { scene, stage, activeLayer, tokens } = canvas;
+  const start = origin ?? { x: stage.pivot.x, y: stage.pivot.y };
+  const level = (canvas as unknown as { level?: { id: string } }).level;
+  const regionData = {
+    name: localize('areaEffect'),
+    color: game.user.color,
+    shapes: [shapeData(data, start, distancePixels(scene))],
+    // Non-template regions default to only showing on the Region layer.
+    visibility: (
+      CONST as unknown as { REGION_VISIBILITY: { ALWAYS: number } }
+    ).REGION_VISIBILITY.ALWAYS,
+    displayMeasurements: true,
+    highlightMode: 'coverage',
+    ...(level ? { levels: [level.id] } : {}),
+    ownership: {
+      [game.user.id]: CONST.DOCUMENT_OWNERSHIP_LEVELS.OWNER,
+    },
+  };
+
+  placing = true;
+  overlay.faded = true;
+  if (origin) canvas.pan(origin);
+  try {
+    const region = await canvas.regions.placeRegion(regionData);
+    return region ? { templateId: region.id, sceneId: scene.id } : null;
+  } finally {
+    placing = false;
+    overlay.faded = false;
+    // Placement switches to the Region layer unless tokens were active.
+    if (activeLayer !== tokens && canvas.activeLayer !== activeLayer) {
+      activeLayer.activate();
+    }
+  }
+};
+
+const findPlacedRegion = (ids: PlacedTemplateIDs | null | undefined) =>
+  ids ? game.scenes.get(ids.sceneId)?.regions.get(ids.templateId) : undefined;
+
+/** Whether a stored area still exists (areas from before V14 may not). */
+export const placedTemplateExists = (
+  ids: PlacedTemplateIDs | null | undefined,
+) => !!findPlacedRegion(ids);
+
+export const deletePlacedTemplate = async (
   ids: PlacedTemplateIDs | undefined | null,
 ) => {
-  if (!ids) return;
-  const { sceneId, templateId } = ids;
-  return game.scenes
-    .get(sceneId)
-    ?.deleteEmbeddedDocuments(MeasuredTemplate.embeddedName, [templateId]);
+  await findPlacedRegion(ids)?.delete();
 };
 
 export const editPlacedTemplate = (
   ids: PlacedTemplateIDs | null | undefined,
 ) => {
-  const { templateId, sceneId } = ids ?? {};
-  const canvas = readyCanvas();
-  if (templateId && canvas?.scene.id === sceneId) {
-    canvas?.templates.get(templateId)?.sheet.render(true);
+  const region = findPlacedRegion(ids);
+  if (region && readyCanvas()?.scene.id === ids?.sceneId) {
+    region.sheet?.render(true);
   }
 };
 
+/** Change a placed area's shape, keeping its position and direction. */
 export const updatePlacedTemplate = (
   ids: PlacedTemplateIDs,
-  changed: Partial<MeasuredTemplateData>,
+  changed: Partial<AreaTemplateData>,
 ) => {
-  return game.scenes
-    .get(ids.sceneId)
-    ?.updateEmbeddedDocuments(MeasuredTemplate.embeddedName, [
-      {
-        ...changed,
-        _id: ids.templateId,
-      },
-    ]);
+  const region = findPlacedRegion(ids);
+  const [shape, ...otherShapes] = (region?._source.shapes ??
+    []) as ShapeSource[];
+  const scene = game.scenes.get(ids.sceneId);
+  if (!region || !shape || !scene) return;
+  const pixelsPerUnit = distancePixels(scene);
+  const next = shapeData(
+    {
+      t: changed.t ?? (shape.type === 'cone' ? 'cone' : 'circle'),
+      distance: changed.distance ?? shape.radius / pixelsPerUnit,
+      angle: changed.angle ?? shape.angle,
+      direction: changed.direction ?? shape.rotation,
+    },
+    shape,
+    pixelsPerUnit,
+  );
+  return region.update({ shapes: [next, ...otherShapes] });
 };
 
-export const getNormalizedTokenSize = ({ document: data }: Token) =>
-  Math.min(data.height, data.width) * data.scale;
-
-export const getTemplateGridHighlightLayer = (templateId: string) => {
-  return readyCanvas()?.grid.getHighlightLayer(`Template.${templateId}`);
-};
-
-export const getVisibleTokensWithinHighlightedTemplate = (
-  templateId: string,
+/**
+ * Visible tokens inside a placed area on the current scene. Uses
+ * testInsideRegion, not RegionDocument#tokens: that set is filled
+ * asynchronously and is still empty right after placement.
+ */
+export const getVisibleTokensWithinTemplate = (
+  ids: PlacedTemplateIDs | null | undefined,
 ) => {
-  const highlighted = getTemplateGridHighlightLayer(templateId);
-  const canvas = readyCanvas();
   const contained = new Set<Token>();
-
-  if (
-    highlighted &&
-    canvas &&
-    notEmpty(highlighted.positions) &&
-    notEmpty(canvas.tokens.placeables)
-  ) {
-    const { grid, tokens, dimensions } = canvas;
-    const { distance } = dimensions;
-
-    const positions = [...highlighted.positions].map((pos) => {
-      const [x = 0, y = 0] = compact(pos.split('.').map(Number));
-      return { x, y };
-    });
-
-    for (const token of tokens.placeables) {
-      const { center } = token;
-      const hitSize = getNormalizedTokenSize(token) * 0.71 * distance;
-      const within = positions.some(
-        (pos) => grid.measureDistance(center, pos) <= hitSize,
-      );
-      if (within && token.isVisible) contained.add(token);
+  const canvas = readyCanvas();
+  const region = findPlacedRegion(ids);
+  if (!canvas || !region || canvas.scene.id !== ids?.sceneId) return contained;
+  for (const token of canvas.tokens.placeables) {
+    if (token.isVisible && token.document.testInsideRegion(region)) {
+      contained.add(token);
     }
   }
-
   return contained;
 };
 
@@ -236,7 +187,7 @@ type CanvasProps = {
   scene: SceneEP;
   stage: import('pixi.js').Application['stage'];
   // dimensions: ReturnType<typeof Canvas['getDimensions']>;
-  dimensions: { size: number; distance: number };
+  dimensions: { size: number; distance: number; distancePixels: number };
   hud: HeadsUpDisplay;
   activeLayer: ValuesType<CanvasLayers>;
   app: import('pixi.js').Application;

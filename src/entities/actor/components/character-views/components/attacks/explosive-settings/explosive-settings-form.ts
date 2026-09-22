@@ -29,18 +29,18 @@ import {
 } from '@src/entities/weapon-settings';
 import { CommonInterval, currentWorldTimeMS } from '@src/features/time';
 import {
+  AreaTemplateData,
+  canPlaceAreas,
   controlledToken,
-  createTemporaryMeasuredTemplate,
   deletePlacedTemplate,
   editPlacedTemplate,
-  getVisibleTokensWithinHighlightedTemplate,
-  MeasuredTemplateData,
-  placeMeasuredTemplate,
+  getVisibleTokensWithinTemplate,
+  placeAreaTemplate,
+  placedTemplateExists,
   readyCanvas,
   updatePlacedTemplate,
 } from '@src/foundry/canvas';
 import { localize } from '@src/foundry/localization';
-import { userCan } from '@src/foundry/misc-helpers';
 import { averageRoll } from '@src/foundry/rolls';
 import {
   isSuccessfullTestResult,
@@ -56,7 +56,6 @@ import {
 } from 'lit-element';
 import { repeat } from 'lit-html/directives/repeat';
 import { difference, identity } from 'remeda';
-import type { SetOptional } from 'type-fest';
 import { traverseActiveElements } from 'weightless';
 import styles from './explosive-settings-form.scss';
 
@@ -194,10 +193,7 @@ export class ExplosiveSettingsForm extends LitElement {
     return average
   }
 
-  private get templateData(): SetOptional<
-    Pick<MeasuredTemplateData, 't' | 'distance' | 'angle'>,
-    'angle'
-  > {
+  private get templateData(): AreaTemplateData {
     const { areaEffect } = this.explosive;
     if (areaEffect === AreaEffectType.Centered) {
       const distance = getCenteredDistance(
@@ -228,14 +224,9 @@ export class ExplosiveSettingsForm extends LitElement {
 
   private async setTemplate() {
     const token = controlledToken();
-    const center = token?.center ??
-      readyCanvas()?.scene._viewPosition ?? { x: 0, y: 0 };
-    const template = createTemporaryMeasuredTemplate({
-      ...center,
-      ...this.templateData,
+    const ids = await placeAreaTemplate(this.templateData, {
+      origin: token?.center,
     });
-    if (!template) return;
-    const ids = await placeMeasuredTemplate(template, !!token);
     if (ids) {
       this.updateSettings({ templateIDs: ids });
       this.getTargets();
@@ -254,9 +245,7 @@ export class ExplosiveSettingsForm extends LitElement {
 
   private getTargets() {
     if (this.settings.templateIDs) {
-      this.targets = getVisibleTokensWithinHighlightedTemplate(
-        this.settings.templateIDs.templateId,
-      );
+      this.targets = getVisibleTokensWithinTemplate(this.settings.templateIDs);
       this.requestUpdate();
     }
   }
@@ -332,7 +321,7 @@ export class ExplosiveSettingsForm extends LitElement {
               : ''}
           </section> `
         : ''}
-      ${areaEffect && userCan('TEMPLATE_CREATE')
+      ${areaEffect && canPlaceAreas()
         ? this.renderTemplateEditor()
         : ''}
       ${this.renderCommonSettings()}
@@ -429,7 +418,8 @@ export class ExplosiveSettingsForm extends LitElement {
         <div>${localize('template')}</div>
         ${template
           ? html`
-              ${readyCanvas()?.scene.id === template.sceneId
+              ${readyCanvas()?.scene.id === template.sceneId &&
+              placedTemplateExists(template)
                 ? html`
                     <mwc-button
                       dense

@@ -26,6 +26,7 @@ type LangEntries =
   | 'save'
   | 'description'
   | 'editorFailed'
+  | 'placeWhilePaused'
   | 'reference'
   | 'negative'
   | 'positive'

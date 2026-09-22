@@ -13,8 +13,10 @@
     "bonus": "Bonus",
     "cost": "Cost",
     "cp": "CP",
-    "description": "Description",
-    "editorFailed": "Could not open the text editor.",
+    "description": "Description",
+
+    "editorFailed": "Could not open the text editor.",
+    "placeWhilePaused": "Areas can't be placed while the game is paused.",
     "mp": "MP",
     "negative": "Negative",
     "positive": "Positive",

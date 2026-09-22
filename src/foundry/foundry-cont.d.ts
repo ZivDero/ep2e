@@ -26,7 +26,6 @@ import type {
   PickByValue,
   ValuesType,
 } from 'utility-types';
-import type { MeasuredTemplateData } from './canvas';
 import type { EP, SystemSchema } from './system';
 import type { EntityTemplates } from './template-schema';
 // * Comment out canvas, game, ui from foundry.d.ts
@@ -148,7 +147,12 @@ export type CanvasLayers = {
 
   drawings: PlaceableLayer<DrawingsLayer, Drawing>;
   grid: GridLayer;
-  templates: PlaceableLayer<TemplateLayer, MeasuredTemplate>;
+  regions: {
+    placeRegion(
+      data: object,
+      options?: { create?: boolean },
+    ): Promise<{ id: string } | null>;
+  };
   walls: PlaceableLayer<WallsLayer, Wall>;
   notes: PlaceableLayer<NotesLayer, Note>;
   tokens: Omit<PlaceableLayer<TokenLayer, Token>, 'cycleTokens'> & {
@@ -296,17 +300,7 @@ declare global {
 
 
   interface GridLayer {
-    getSnappedPosition(
-      x: number,
-      y: number,
-      interval: number,
-    ): { x: number; y: number };
     readonly type: ValuesType<CONST['GRID_TYPES']>;
-    highlightLayers: Record<string, GridHighlight>;
-  }
-
-  interface GridHighlight {
-    positions: Set<`${number}.${number}`>;
   }
 
   interface Token {
@@ -514,13 +508,6 @@ declare global {
     sheet: Application | null;
   }
 
-  interface MeasuredTemplate {
-    readonly layer: TemplateLayer;
-    document: MeasuredTemplateData & {
-      toJSON(): MeasuredTemplateData;
-    };
-  }
-
   interface PlaceablesLayer {
     preview: import('pixi.js').Container | null;
   }
@@ -676,6 +663,7 @@ declare global {
     collections: Map<EntityName, GameCollections[keyof GameCollections]>;
     model: { Actor: ActorModels; Item: ItemModels };
     readonly combat: Combat | null;
+    readonly paused: boolean;
   };
 
   type UIClasses = typeof CONFIG.ui;
