@@ -20,12 +20,12 @@ export class TimeSince extends LitElement {
   }
 
   disconnectedCallback() {
-    this.intervalId ?? clearInterval(this.intervalId);
+    if (this.intervalId !== undefined) clearInterval(this.intervalId);
     super.disconnectedCallback();
   }
 
   render() {
-    return html` ${timeSince(this.timestamp)} `;
+    return html` ${foundry.utils.timeSince(new Date(this.timestamp))} `;
   }
 }
 

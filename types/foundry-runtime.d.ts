@@ -32,6 +32,25 @@ declare global {
   const fromUuid: (uuid: string, options?: object) => Promise<any>;
   const fromUuidSync: (uuid: string, options?: object) => any;
 
+  /** foundry.dice.terms.DiceTerm (type only: the DiceTerm global was removed in V14). */
+  interface FoundryDiceTermResult {
+    result: number;
+    active: boolean;
+  }
+  interface FoundryDiceTerm {
+    number: number;
+    faces: number;
+    results: FoundryDiceTermResult[];
+    roll(options?: {
+      minimize?: boolean;
+      maximize?: boolean;
+    }): Promise<FoundryDiceTermResult>;
+  }
+  interface FoundryDiceTermConstructor {
+    new (data: object): FoundryDiceTerm;
+    DENOMINATION: string;
+  }
+
   // Partially described in foundry-cont.d.ts; open them up for everything else.
   interface Token { [key: string]: any }
   interface TokenDocument { [key: string]: any }

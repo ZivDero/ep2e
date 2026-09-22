@@ -276,7 +276,7 @@ declare global {
     }
     dice: {
       terms: {
-        DiceTerm: typeof DiceTerm
+        DiceTerm: FoundryDiceTermConstructor
       }
     }
   };
@@ -459,7 +459,7 @@ declare global {
   interface Roll {
     readonly formula: string;
     readonly total: number | null;
-    readonly terms: (DiceTerm | string | number)[];
+    readonly terms: (FoundryDiceTerm | string | number)[];
     toJSON(): {
       class: 'Roll';
       dice: unknown[];
@@ -551,7 +551,7 @@ declare global {
 
   interface Die {
     faces: number;
-    results: ReturnType<DiceTerm['roll']>[];
+    results: FoundryDiceTermResult[];
     sides: number[];
   }
 
@@ -642,8 +642,6 @@ declare global {
     _id: string;
   }
 
-
-  export function timeSince(timestamp: Date | number): string;
 
 
   interface System extends SystemSchema {
