@@ -28,12 +28,17 @@ export const migrateWorld = async () => {
     [...game.actors.values()],
     map(migrateActor),
     concat(
-      [...game.scenes.values()].flatMap((scene) => {
-        const { tokens } = scene.toJSON();
-        return [...tokens.values()].flatMap((tokenDoc) => {
-          return tokenDoc.actor?.isToken ? migrateActor(tokenDoc.actor) : [];
-        });
-      }),
+      // Unlinked tokens carry their own actor data. This used to read
+      // scene.toJSON() source data, which has no .actor, so they were skipped.
+      // V14 creates actor deltas lazily; a token without one has nothing of
+      // its own to migrate, and reading token.actor would materialise one.
+      [...game.scenes.values()].flatMap((scene) =>
+        [...scene.tokens.values()].flatMap((token: TokenDocument) => {
+          if (token.actorLink || !token.delta) return [];
+          const { actor } = token;
+          return actor?.isToken ? migrateActor(actor as ActorEP) : [];
+        }),
+      ),
     ),
     updateManyActors,
   );
