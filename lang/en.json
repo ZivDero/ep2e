@@ -1604,5 +1604,32 @@
       "ActionToActivate": "{action} action to activate",
       "ModifiedTime": "Time {direction} by {amount}."
     }
+  },
+  "TYPES": {
+    "Actor": {
+      "biological": "Biological",
+      "character": "Character",
+      "synthetic": "Synthetic",
+      "infomorph": "Infomorph"
+    },
+    "Item": {
+      "psi": "Psi",
+      "trait": "Trait",
+      "sleight": "Sleight",
+      "substance": "Substance",
+      "armor": "Armor",
+      "explosive": "Explosive",
+      "software": "Software",
+      "meleeWeapon": "Melee Weapon",
+      "physicalTech": "Physical Tech",
+      "beamWeapon": "Beam Weapon",
+      "physicalService": "Physical Service",
+      "railgun": "Railgun",
+      "firearm": "Firearm",
+      "firearmAmmo": "Firearm Ammo",
+      "sprayWeapon": "Spray Weapon",
+      "seekerWeapon": "Seeker Weapon",
+      "thrownWeapon": "Thrown Weapon"
+    }
   }
 }
