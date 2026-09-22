@@ -42,6 +42,7 @@ declare global {
   interface Roll { [key: string]: any }
   interface GridLayer { [key: string]: any }
   interface Canvas { [key: string]: any }
+  interface Macro { [key: string]: any }
 }
 
 export {};

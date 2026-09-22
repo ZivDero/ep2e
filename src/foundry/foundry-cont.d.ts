@@ -649,7 +649,7 @@ declare global {
   interface System extends SystemSchema {
     id: EP.Name;
     // template: EntityTemplates;
-    template: { Actor: ActorModels; Item: ItemModels };
+    // template: { Actor: ActorModels; Item: ItemModels };
     /**
      * @deprecated
      */
@@ -666,6 +666,7 @@ declare global {
     keyboard: KeyboardManager;
     time: GameTime;
     collections: Map<EntityName, GameCollections[keyof GameCollections]>;
+    model: { Actor: ActorModels; Item: ItemModels };
     readonly combat: Combat | null;
   };
 

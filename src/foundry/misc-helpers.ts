@@ -47,7 +47,7 @@ export const userCan = (permission: keyof typeof CONST.USER_PERMISSIONS) => {
 };
 
 export const packIsVisible = (pack: CompendiumCollection) =>
-  game.user.isGM || !pack.private;
+  game.user.isGM || pack.visible;
 
 export const performIntegerSort = <T extends { id: string }>({
   src,

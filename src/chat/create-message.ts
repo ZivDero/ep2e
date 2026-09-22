@@ -80,7 +80,6 @@ export const createMessage = async ({
             actor,
             token,
           }),
-    type: roll ? CONST.CHAT_MESSAGE_TYPES.ROLL : undefined,
     blind: visibility === MessageVisibility.Blind,
     whisper:
       whisper ||

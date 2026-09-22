@@ -231,7 +231,7 @@ Hooks.on('hotbarDrop', async (hotbar: unknown, data: unknown, slot: number) => {
           successTest.fieldSkill.field
         } ${localize('skillTest')}`;
     let macro = [...game.macros.values()].find(
-      (m) => m.name === name && m.data.command === command,
+      (m) => m.name === name && m.command === command,
     );
     if (!macro) {
       macro = (await Macro.create({

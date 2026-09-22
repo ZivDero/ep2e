@@ -90,7 +90,7 @@ export const createActorEntity = <T extends ActorType>({
   name: string;
   data?: Partial<ActorEntity<T>['system']>;
 }): ActorEntity<T> => {
-  const modelData = foundry.utils.mergeObject(game.system.template.Actor[type], data || {}, {
+  const modelData = foundry.utils.mergeObject(game.model.Actor[type], data || {}, {
     inplace: false,
   });
   const _id = stringID(16);
@@ -143,7 +143,7 @@ export const createActorEntity = <T extends ActorType>({
 };
 
 export const createEgoData = (): FullEgoData => {
-  const data = pick(game.system.template.Actor.character, [
+  const data = pick(game.model.Actor.character, [
     'egoType',
     'forkType',
     'flex',
@@ -208,7 +208,7 @@ export const createItemEntity = <T extends ItemType>({
   name: string;
   system?: Partial<ItemEntity<T>['system']>;
 }): ItemEntity<T> => {
-  const modelData = foundry.utils.mergeObject(game.system.template.Item[type], data || {}, {
+  const modelData = foundry.utils.mergeObject(game.model.Item[type], data || {}, {
     inplace: false,
   });
   return {
