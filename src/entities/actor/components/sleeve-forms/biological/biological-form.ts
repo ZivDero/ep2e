@@ -252,11 +252,7 @@ export class BiologicalForm extends SleeveFormBase {
             })}
           </sl-dropzone>
         </div>
-        <editor-wrapper
-          slot="description"
-          ?disabled=${disabled}
-          .updateActions=${updater.path('system', 'description')}
-        ></editor-wrapper>
+        ${this.renderDescriptionSlot()}
         ${this.renderDrawerContent()}
       </entity-form-layout>
     `;

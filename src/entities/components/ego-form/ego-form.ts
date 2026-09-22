@@ -50,6 +50,7 @@ import { repeat } from 'lit-html/directives/repeat';
 import mix from 'mix-with/lib';
 import { createPipe, identity, map, toPairs } from 'remeda';
 import { Ego } from '../../actor/ego';
+import { DescriptionEditorHost } from '@src/components/editor-wrapper/description-editor-host';
 import styles from './ego-form.scss';
 
 const renderAptitudeField = ([, apt]: [
@@ -70,9 +71,8 @@ const renderAptitudeFields: FieldPropsRenderer<Aptitudes> = createPipe(
 const itemGroupKeys = ['sleights', 'traits'] as const;
 
 @customElement('ego-form')
-export class EgoForm extends mix(LitElement).with(
-  FormDrawer,
-  TabsMixin(['details', 'skills', 'reps']),
+export class EgoForm extends DescriptionEditorHost(
+  mix(LitElement).with(FormDrawer, TabsMixin(['details', 'skills', 'reps'])),
 ) {
   static get is() {
     return 'ego-form' as const;
@@ -109,6 +109,13 @@ export class EgoForm extends mix(LitElement).with(
     this.ego.rollStress();
   }
 
+  protected get descriptionEditorState() {
+    return {
+      disabled: this.ego.disabled,
+      updateActions: this.ego.updater.path('system', 'description'),
+    };
+  }
+
   render() {
     const { updater, disabled } = this.ego;
     const { activeTab } = this;
@@ -122,15 +129,7 @@ export class EgoForm extends mix(LitElement).with(
         ></entity-form-header>
         ${this.renderTabBar('tabs')} ${this.renderSidebar()}
         ${cache(this.renderTabbedContent(this.activeTab))}
-        ${activeTab === 'details'
-          ? html`
-              <editor-wrapper
-                slot="description"
-                ?disabled=${disabled}
-                .updateActions=${updater.path('system', 'description')}
-              ></editor-wrapper>
-            `
-          : ''}
+        ${activeTab === 'details' ? this.renderDescriptionSlot() : ''}
         ${this.renderDrawerContent()}
       </entity-form-layout>
     `;

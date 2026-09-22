@@ -427,11 +427,7 @@ export class MeleeWeaponForm extends ItemFormBase {
             : ''}
         </sl-animated-list>
 
-        <editor-wrapper
-          slot="description"
-          ?disabled=${disabled}
-          .updateActions=${updater.path('system', 'description')}
-        ></editor-wrapper>
+        ${this.renderDescriptionSlot()}
         ${this.renderDrawerContent()}
       </entity-form-layout>
     `;
