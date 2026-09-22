@@ -183,12 +183,14 @@ export class RangedAttackControls extends LitElement {
   private startTargetting() {
     const canvas = readyCanvas();
     if (!canvas) return;
-    const { activeLayer, stage } = canvas;
     const { view } = canvas.app;
-    const { activeTool } = ui.controls;
+    // Restore whichever control and tool were active before targeting.
+    const previous = {
+      control: ui.controls.control?.name,
+      tool: ui.controls.tool?.name,
+    };
     const cleanup = () => {
-      activeLayer.activate();
-      ui.controls.initialize({ tool: activeTool, layer: null, control: null });
+      ui.controls.activate(previous);
       view.removeEventListener('click', cleanup);
       view.removeEventListener('contextmenu', cleanup);
       overlay.faded = false;
@@ -196,8 +198,7 @@ export class RangedAttackControls extends LitElement {
 
     view.addEventListener('click', cleanup);
     view.addEventListener('contextmenu', cleanup);
-    canvas.tokens.activate();
-    ui.controls.initialize({ tool: 'target', layer: null, control: null });
+    canvas.tokens.activate({ tool: 'target' });
     overlay.faded = true;
   }
 

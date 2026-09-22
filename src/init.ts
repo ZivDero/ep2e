@@ -133,53 +133,45 @@ Hooks.once('ready', async () => {
   document.getElementById('board')?.addEventListener('mousedown', (ev) => {
     if (ev.button === 1) {
       ev.preventDefault();
+      // Middle-click on the canvas lists the active scene control's tools.
+      // Mirrors how core's SceneControls handles a tool click (V13+).
       const control = ui.controls.control as {
         name: string;
         title: string;
-        layer: string;
-        activeTool: string;
-        tools: {
-          name: string;
-          icon: string;
-          title: string;
-          toggle?: boolean;
-          button?: boolean;
-          active?: boolean;
-          onClick?: (args?: unknown) => void;
-          onChange?: (args?: unknown) => void;
-        }[];
+        tools: Record<
+          string,
+          {
+            name: string;
+            icon: string;
+            title: string;
+            order?: number;
+            toggle?: boolean;
+            button?: boolean;
+            active?: boolean;
+            onChange?: (event: Event, active: boolean) => void;
+          }
+        >;
       } | null;
-      const tools = control ? values(control.tools) : [];
+      const tools = control
+        ? values(control.tools).sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        : [];
       if (control && notEmpty(tools)) {
         openMenu({
           header: { heading: game.i18n.localize(control.title) },
           content: tools.map((tool) => ({
             label: game.i18n.localize(tool.title),
             icon: html`<i class=${tool.icon}></i>`,
-            activated: ui.controls.activeTool === tool.name || !!tool.active,
+            activated:
+              ui.controls.tool?.name === tool.name ||
+              (!!tool.toggle && !!tool.active),
             callback: () => {
-              if (tool.toggle) {
-                tool.active = !tool.active;
-                if (tool.onClick instanceof Function) tool.onClick(tool.active);
-              }
-
-              // Handle Buttons
-              else if (tool.button) {
-                if (tool.onClick instanceof Function) tool.onClick();
-                else if (tool['onChange'] instanceof Function) {
-                  tool.onChange()
-                }
-              }
-
-              // Handle Tools
-              else {
-                ui.controls.initialize({ tool: tool.name } as any);
-              }
-
-              queueMicrotask(() => {
-                ui.controls.render();
-
-              })
+              if (tool.button) tool.onChange?.(ev, true);
+              else if (tool.toggle) {
+                ui.controls.activate({
+                  event: ev,
+                  toggles: { [tool.name]: !tool.active },
+                });
+              } else ui.controls.activate({ event: ev, tool: tool.name });
             },
           })),
           position: ev,
