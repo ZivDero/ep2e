@@ -50,7 +50,6 @@ archive
   .directory(...df("packs/"))
   .directory(...df("build/"))
   .file(...n("lang/en.json"))
-  .file(...n("body-init.css"))
   .file(...n("darkMCE.css"))
   .file(...n("system.json"))
   .file(...n("template.json"));

@@ -3,6 +3,8 @@ module.exports = {
   mount: {
     src: { url: '/dist' },
   },
+  // Compendium sources are compiled into ./packs by `npm run pack`; don't ship the raw JSON.
+  exclude: ['**/src/packs/**'],
   plugins: [
     '@snowpack/plugin-babel',
     '@snowpack/plugin-dotenv',
