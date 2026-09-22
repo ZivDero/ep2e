@@ -60,7 +60,7 @@ export const performIntegerSort = <T extends { id: string }>({
   siblings: T[];
   sortBefore: boolean;
 }) => {
-  const sorted = SortingHelpers.performIntegerSort(src, {
+  const sorted = foundry.utils.performIntegerSort(src, {
     target: target as unknown as null,
     siblings: siblings as never[],
     sortBefore,
@@ -72,13 +72,13 @@ export const performIntegerSort = <T extends { id: string }>({
 type FoundryOption = {
   name: string;
   icon: string; // use unsafeHTML,
-  condition?: ((target: JQuery) => boolean | number) | boolean;
-  callback: (target: JQuery) => void;
+  condition?: ((target: JQuery | HTMLElement) => boolean | number) | boolean;
+  callback: (target: JQuery | HTMLElement) => void;
 };
 
 export const convertMenuOptions = (
   options: FoundryOption[],
-  targetLi: JQuery<HTMLElement>,
+  targetLi: HTMLElement,
 ) => {
   return (options || []).flatMap(({ name, icon, condition, callback }) =>
     (

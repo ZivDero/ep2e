@@ -61,7 +61,7 @@ export class ParticipantSelector extends mix(LitElement).with(
       updateCombatState({
         type: CombatActionType.AddParticipants,
         payload: [...this.toAdd].map((entity) =>
-          entity instanceof Token
+          entity instanceof foundry.canvas.placeables.Token
             ? {
                 name: entity.name,
                 hidden: entity.document.hidden,

@@ -1,6 +1,5 @@
 import { html, render } from 'lit-html';
 import { compact, first, values } from 'remeda';
-import type { RawEditorOptions } from 'tinymce';
 import type { PartialDeep } from 'type-fest';
 import { createMessage, rollModeToVisibility } from './chat/create-message';
 import { onChatMessageRender } from './chat/message-hooks';
@@ -84,8 +83,8 @@ Hooks.once('init', () => {
     'icons/nested-eclipses.svg',
   );
   CONFIG.Actor.documentClass = ActorEP;
-  Actors.unregisterSheet('core', ActorSheet);
-  Actors.registerSheet(EP.Name, ActorEPSheet, { makeDefault: true });
+  foundry.documents.collections.Actors.unregisterSheet('core', foundry.appv1.sheets.ActorSheet);
+  foundry.documents.collections.Actors.registerSheet(EP.Name, ActorEPSheet, { makeDefault: true });
 
   CONFIG.Scene.documentClass = SceneEP;
   CONFIG.ChatMessage.documentClass = ChatMessageEP;
@@ -94,10 +93,8 @@ Hooks.once('init', () => {
   CONFIG.User.documentClass = UserEP;
   CONFIG.Item.documentClass = ItemEP;
 
-  Items.unregisterSheet('core', ItemSheet);
-  Items.registerSheet(EP.Name, ItemEPSheet, { makeDefault: true });
-  CONFIG.TinyMCE.content_css.push(`${EP.Path}/darkMCE.css`);
-  (CONFIG.TinyMCE as RawEditorOptions).skin = 'oxide-dark';
+  foundry.documents.collections.Items.unregisterSheet('core', foundry.appv1.sheets.ItemSheet);
+  foundry.documents.collections.Items.registerSheet(EP.Name, ItemEPSheet, { makeDefault: true });
   CONFIG.Combat.initiative.decimals = 2;
   CONFIG.statusEffects = compact([
     CONFIG.statusEffects[0],
@@ -111,7 +108,7 @@ Hooks.once('init', () => {
   addEPSocketHandler('mutateCombat', combatSocketHandler);
 });
 
-Hooks.on('renderChatMessage', onChatMessageRender);
+Hooks.on('renderChatMessageHTML', onChatMessageRender);
 
 Hooks.once('ready', async () => {
   setupSystemSocket();
@@ -364,7 +361,7 @@ Hooks.once('ready', async () => {
     ?.append(compendiumSearchButton());
 
   applicationHook({
-    app: CompendiumDirectory,
+    app: foundry.applications.sidebar.tabs.CompendiumDirectory,
     hook: 'on',
     event: 'render',
     callback: (dir, el) => {
@@ -373,7 +370,7 @@ Hooks.once('ready', async () => {
   });
 
   applicationHook({
-    app: ChatLog,
+    app: foundry.applications.sidebar.tabs.ChatLog,
     hook: 'on',
     event: 'render',
     callback: (log) => {
@@ -387,7 +384,7 @@ Hooks.once('ready', async () => {
 
 
   mutatePlaceableHook({
-    entity: Token,
+    entity: foundry.canvas.placeables.Token,
     hook: 'on',
     event: MutateEvent.Update,
     callback: (tokenDoc, change) => {
@@ -404,7 +401,7 @@ Hooks.once('ready', async () => {
   });
 
   mutatePlaceableHook({
-    entity: Token,
+    entity: foundry.canvas.placeables.Token,
     hook: 'on',
     event: MutateEvent.Delete,
     callback: (tokenDoc) => {
@@ -435,7 +432,7 @@ window.addEventListener(
   { capture: true },
 );
 
-for (const app of [Dialog, FolderConfig, FilePicker]) {
+for (const app of [Dialog, foundry.applications.sheets.FolderConfig, foundry.applications.apps.FilePicker.implementation]) {
   applicationHook({
     app,
     hook: 'on',
@@ -462,7 +459,7 @@ const isItem = (entity: ItemEP | ActorEP): entity is ItemEP => {
 };
 
 applicationHook({
-  app: Compendium,
+  app: foundry.applications.sidebar.apps.Compendium,
   hook: 'on',
   event: 'render',
   callback: async (compendium, el) => {
@@ -506,7 +503,7 @@ applicationHook({
 });
 
 if (true) {
-  for (const app of [ActorDirectory, ItemDirectory]) {
+  for (const app of [foundry.applications.sidebar.tabs.ActorDirectory, foundry.applications.sidebar.tabs.ItemDirectory]) {
     applicationHook({
       app,
       hook: 'on',
@@ -515,7 +512,7 @@ if (true) {
         return list?.querySelectorAll<HTMLLIElement>('.document').forEach((listItem) => {
           const { entryId } = listItem.dataset;
           const doc = entryId &&
-            game[app === ActorDirectory ? 'actors' : 'items'].get(entryId);
+            game[app === foundry.applications.sidebar.tabs.ActorDirectory ? 'actors' : 'items'].get(entryId);
           if (!doc)
             return;
 

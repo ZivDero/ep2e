@@ -44,7 +44,7 @@ const splitEntity = (entity: MessageInit['entity']) => {
   return {
     actor: entity instanceof ActorEP ? entity : entity?.actor,
     token:
-      entity instanceof Token
+      entity instanceof foundry.canvas.placeables.Token
         ? entity.document
         : entity instanceof TokenDocument
         ? entity

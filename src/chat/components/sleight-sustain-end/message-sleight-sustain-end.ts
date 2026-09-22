@@ -29,7 +29,7 @@ export class MessageSleightSustainEnd extends MessageElement {
       const actor =
         entity instanceof ActorEP
           ? entity
-          : entity instanceof Token
+          : entity instanceof foundry.canvas.placeables.Token
           ? entity.actor
           : null;
       if (actor?.proxy.type === ActorType.Character) {

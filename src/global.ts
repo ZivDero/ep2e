@@ -217,7 +217,7 @@ function startSuccessTest(successTest: SuccessTestInitInfo) {
   });
 }
 
-Hooks.on('hotbarDrop', async (hotbar: Hotbar, data: unknown, slot: number) => {
+Hooks.on('hotbarDrop', async (hotbar: unknown, data: unknown, slot: number) => {
   if (isKnownDrop(data) && data.type === DropType.SuccessTestInfo) {
     const { successTest } = data;
     const command = `window.ep2e.startSuccessTest(${JSON.stringify(

@@ -1,5 +1,5 @@
 {
-  "version": "1.3.3",
+  "version": "2.0.0",
   "id": "ep2e",
   "title": "Eclipse Phase 2e",
   "description": "Eclipse Phase 2e Game System.",
@@ -15,16 +15,18 @@
     "./build/dist/global.scss.css"
   ],
   "compatibility": {
-    "minimum": "13",
-    "verified": "13",
-    "maximum": "13"
+    "minimum": "14",
+    "verified": "14.368",
+    "maximum": "14"
   },
-  "gridDistance": 1,
-  "gridUnits": "m",
+  "grid": {
+    "distance": 1,
+    "units": "m"
+  },
   "socket": true,
-  "manifest": "https://github.com/Bubz43/ep2e/releases/latest/download/system.json",
-  "download": "https://github.com/Bubz43/ep2e/releases/latest/download/latest.zip",
-  "url": "https://github.com/Bubz43/ep2e",
+  "manifest": "https://github.com/ZivDero/ep2e/releases/latest/download/system.json",
+  "download": "https://github.com/ZivDero/ep2e/releases/latest/download/latest.zip",
+  "url": "https://github.com/ZivDero/ep2e",
   "languages": [
     {
       "lang": "en",
