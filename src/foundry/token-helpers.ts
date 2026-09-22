@@ -22,18 +22,6 @@ export const releaseTargetToken = (token: Token) =>
 export const releaseAllTargets = () =>
   first([...game.user.targets])?.setTarget(false, { releaseOthers: true });
 
-export const activateTargetingTool = () => {
-  if (ui.controls.activeControl !== 'token') {
-    document
-      .querySelector<HTMLElement>("#controls [data-control='token']")
-      ?.click();
-  }
-  requestAnimationFrame(() => {
-    ui.controls.control.activeTool = 'target';
-    ui.controls.render();
-  });
-};
-
 export const activeTokenStatusEffects = ({ document: data, actor }: Token) =>
   ((actor as ActorEP | undefined)?.conditions ?? []).map(
     (condition) => conditionIcons[condition],
@@ -41,11 +29,11 @@ export const activeTokenStatusEffects = ({ document: data, actor }: Token) =>
 
 export const distanceBetweenTokens = (tokenA: Token, tokenB: Token) => {
   let distance = Math.hypot(
-    readyCanvas()!.grid.measureDistance(tokenA.center, tokenB.center),
+    readyCanvas()!.grid.measurePath([tokenA.center, tokenB.center]).distance,
     Math.abs(tokenA.document.elevation - tokenB.document.elevation),
   );
 
-  const gridScale = readyCanvas()?.scene.gridDistance || 1;
+  const gridScale = readyCanvas()?.scene.grid.distance || 1;
 
   if (tokenB.document.width === tokenB.document.height) {
     distance -= (tokenB.document.width / 2) * gridScale;
