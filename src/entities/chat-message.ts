@@ -147,13 +147,14 @@ export class ChatMessageEP extends ChatMessage {
   }
 
   setRollDrag(ev: DragEvent) {
-    const { _roll } = this;
+    // Messages hold rolls in `rolls` (the single `_roll` is gone since V10).
+    const [roll] = (this.rolls ?? []) as Roll[];
     const { flavor, id } = this;
     setDragDrop(ev, {
       type: DropType.Roll,
       messageId: id,
-      roll: _roll?.total || 0,
-      formula: _roll?.formula || '',
+      roll: roll?.total || 0,
+      formula: roll?.formula || '',
       flavor: flavor || '',
     });
   }
