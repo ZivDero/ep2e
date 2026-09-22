@@ -155,14 +155,15 @@ export abstract class CharacterViewBase extends LitElement {
 
   private handleFolderDrop = handleDrop(({ drop }) => {
     if (this.character.disabled) return;
-    if (
-      isKnownDrop(drop) &&
-      drop.type === DropType.Folder &&
-      drop.entity === 'Item'
-    ) {
-      const folder = game.folders.get(drop.id);
-      const items = folder && (folder?.entities as ItemEP[]);
-      if (folder && notEmpty(items)) {
+    if (isKnownDrop(drop) && drop.type === DropType.Folder) {
+      const folder = (
+        drop.uuid
+          ? fromUuidSync(drop.uuid)
+          : drop.id && game.folders.get(drop.id)
+      ) as Folder | null | undefined;
+      const items =
+        folder?.type === 'Item' ? (folder.contents as ItemEP[]) : null;
+      if (folder && items && notEmpty(items)) {
         this.dispatchEvent(
           new RenderDialogEvent(html`
             <mwc-dialog heading=${folder.name}>

@@ -168,10 +168,12 @@ type PsiInfluenceDrop = KnownDrop<{
   influence: PsiInfluenceData;
 }>;
 
+// Core (V10+) folder drag data is {type, uuid}; {id, entity} is the V9 shape.
 type FolderDrop = KnownDrop<{
   type: DropType.Folder;
-  id: string;
-  entity: EntityName;
+  uuid?: string;
+  id?: string;
+  entity?: EntityName;
 }>;
 
 type SuccessTestDrop = KnownDrop<{
@@ -268,7 +270,8 @@ const isRollTableDrop = dropChecker(DropType.RollTable, simpleDropCheck);
 const isJournalEntryDrop = dropChecker(DropType.JournalEntry, simpleDropCheck);
 const isFolderDrop = dropChecker(
   DropType.Folder,
-  ({ id, entity }) => !!(id && typeof entity === 'string'),
+  ({ uuid, id, entity }) =>
+    typeof uuid === 'string' || !!(id && typeof entity === 'string'),
 );
 
 const isSuccessTestInfo = dropChecker(DropType.SuccessTestInfo, (data) => {

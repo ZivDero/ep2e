@@ -119,7 +119,6 @@ import { InfomorphForm } from './entities/actor/components/sleeve-forms/infomorp
 import { SleeveFormMovementList } from './entities/actor/components/sleeve-forms/movement/sleeve-form-movement-list';
 import { SleeveFormPools } from './entities/actor/components/sleeve-forms/pools/sleeve-form-pools';
 import { SyntheticForm } from './entities/actor/components/sleeve-forms/synthetic/synthetic-form';
-import { CompendiumList } from './entities/components/compendium-list/compendium-list';
 import { CompendiumSearch } from './entities/components/compendium-search/compendium-search';
 import { EgoForm } from './entities/components/ego-form/ego-form';
 import { EgoFormRep } from './entities/components/ego-form/ego-form-rep';
@@ -133,7 +132,6 @@ import { EntityFormFooter } from './entities/components/form-layout/entity-form-
 import { EntityFormHeader } from './entities/components/form-layout/entity-form-header';
 import { EntityFormLayout } from './entities/components/form-layout/entity-form-layout';
 import { EntityFormSidebarDivider } from './entities/components/form-layout/entity-form-sidebar-divider';
-import { UserView } from './entities/components/user-view/user-view';
 import { ArmorForm } from './entities/item/components/forms/armor/armor-form';
 import { BeamWeaponForm } from './entities/item/components/forms/beam-weapon/beam-weapon-form';
 import { ExplosiveForm } from './entities/item/components/forms/explosive/explosive-form';
@@ -217,8 +215,6 @@ TimeSince;
 ColoredTag;
 
 // Entity
-CompendiumList;
-UserView;
 CompendiumSearch;
 
 // Actor
