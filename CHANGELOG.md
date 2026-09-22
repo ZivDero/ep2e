@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.0.0] - Unreleased
+
+Foundry V14 release. This version requires Foundry V14 and no longer supports V13; stay on 1.3.x for V13 worlds. Maintained as a fork at https://github.com/ZivDero/ep2e (system id is still `ep2e`, so existing worlds keep working after switching the install link).
+
+- Update for Foundry V14 (targets 14.368)
+- Rich text descriptions use Foundry's ProseMirror editor (V14 removed TinyMCE)
+- Fix rolls failing to post to chat, ranged/thrown/psi tests failing with targets selected, and the combat view's defeated toggle
+- Players no longer see GM-only compendiums in the sleeve picker
+- Fix creating actors and items through the EP creators
+- A Foundry core change now disables only the affected feature instead of preventing the system from loading
+- Smaller release download (compendium source files are no longer included)
+
 ## [1.3.3] - 2026-04-14
 
 - Convert compendium packs from NeDB to LevelDB format required by Foundry V13

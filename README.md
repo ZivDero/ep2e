@@ -2,9 +2,15 @@
 
 Heavily automated [Eclipse Phase 2e](https://www.eclipsephase.com) system.
 
-## Maintenance mode 
+## About this fork
 
-The is largely stable, but there are rough edges and unfinished features. It is foundry 13 compatible. Discoverability of features is sometimes a bit lacking, and a [discord](https://discord.gg/zs4jMnFqjx) server is available if you have any questions or want to talk with other users of the system. It is currently in maintenance mode (critical bugs/foundry compat only) until the rewrite is complete.
+This is a fork of [Bubz43/ep2e](https://github.com/Bubz43/ep2e) updated for **Foundry V14**. Version 2.0.0 and later require Foundry V14; use 1.3.x from the original repository for Foundry V13. The system id is unchanged (`ep2e`), so existing worlds keep working: install from this fork's manifest URL:
+
+`https://github.com/ZivDero/ep2e/releases/latest/download/system.json`
+
+## Status
+
+The system is largely stable, but there are rough edges and unfinished features. Discoverability of features is sometimes a bit lacking. The original author's [discord](https://discord.gg/zs4jMnFqjx) server covers the system in general.
 
 ### Notable missing features and issues
 
