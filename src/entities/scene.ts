@@ -21,7 +21,7 @@ export class SceneEP extends Scene {
   }
 
   preload(push = true) {
-    game.scenes.preload(this.id, push);
+    game.scenes.preload(this.id, { broadcast: push });
   }
 
   get fullSceneName() {

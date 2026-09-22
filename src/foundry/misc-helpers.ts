@@ -112,7 +112,12 @@ export const updateManyActors = async (actors: ActorEP[]): Promise<unknown> => {
   );
 };
 function _deepMerge<T>(original: T, changes: Partial<DeepPartial<T>>): T {
-  return foundry.utils.mergeObject(original, changes, { inplace: false });
+  // applyOperators: resolve V14 update operators (e.g. the ForcedDeletion
+  // UpdateStore emits for removed flags) instead of copying them into data.
+  return foundry.utils.mergeObject(original, changes, {
+    inplace: false,
+    applyOperators: true,
+  } as { inplace: false });
 }
 export function deepMerge<T>(
   original: T,

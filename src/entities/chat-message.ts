@@ -126,7 +126,11 @@ export class ChatMessageEP extends ChatMessage {
   }
 
   createSimilar(data: MessageData) {
-    const { id, author: user, timestamp, flags, ...common } = this;
+    // Copy the source fields (speaker, whisper, blind, ...) but not identity,
+    // authorship or flags. V14 made more instance properties enumerable, so
+    // spreading the document itself would carry extra keys.
+    const { _id, author, timestamp, flags, _stats, ...common } =
+      this.toObject();
     const { header } = this.epFlags ?? {};
     const chatMessageData: Partial<ChatMessageData> = {
       ...common,

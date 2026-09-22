@@ -79,6 +79,8 @@ export type TokenData = {
   texture: {
     src: string;
     tint: null | unknown;
+    scaleX: number;
+    scaleY: number;
   };
   hidden?: boolean;
   width: number;
@@ -188,7 +190,7 @@ type GameCollections = {
   users: Col<UserEP> & { players: UserEP[] };
   messages: Col<ChatMessageEP>;
   scenes: Col<SceneEP> & {
-    preload(sceneId: string, push?: boolean): Promise<unknown>;
+    preload(sceneId: string, options?: { broadcast?: boolean }): Promise<unknown>;
     active?: SceneEP | null;
   };
   items: Col<ItemEP>;
@@ -215,6 +217,8 @@ declare global {
     }
     utils: typeof import('common/utils/module') & {
       fromUuidSync: (...args: Parameters<typeof fromUuid>) => { toDragData(): unknown } | undefined | null;
+      performIntegerSort: (source: unknown, options: object) => unknown[];
+      timeSince: (timestamp: Date | string) => string;
     };
     abstract: typeof import('common/abstract/module');
     data: typeof import('common/data/module');

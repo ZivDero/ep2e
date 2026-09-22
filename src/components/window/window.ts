@@ -104,7 +104,15 @@ export class SlWindow extends LitElement {
       if (
         ui.activeWindow === undefined &&
         zIndex >= this.maxZIndex &&
-        keys(ui.windows).length === 0
+        keys(ui.windows).length === 0 &&
+        // ui.windows only tracks V1 apps; also wait for framed V2 windows.
+        ![
+          ...(
+            foundry.applications as unknown as {
+              instances: Map<string, { hasFrame?: boolean }>;
+            }
+          ).instances.values(),
+        ].some((app) => app.hasFrame)
       ) {
         const allWindows = Array.from(
           document.querySelectorAll('sl-window'),
@@ -182,11 +190,16 @@ export class SlWindow extends LitElement {
 
   async connectedCallback() {
     if ((game as any).modules.get('foundry-taskbar')?.active) {
-      if (
-        game.settings.get('foundry-taskbar', 'enableplayers') ||
-        game.user.isGM
-      ) {
-        this.showTaskbarMinimize = true;
+      try {
+        if (
+          game.settings.get('foundry-taskbar', 'enableplayers') ||
+          game.user.isGM
+        ) {
+          this.showTaskbarMinimize = true;
+        }
+      } catch (error) {
+        // A taskbar version without this setting must not stop the window.
+        console.warn('EP2e | foundry-taskbar integration:', error);
       }
     }
     super.connectedCallback();

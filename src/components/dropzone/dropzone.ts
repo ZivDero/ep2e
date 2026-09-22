@@ -34,7 +34,7 @@ export class DropZone extends mix(LitElement).with(LazyRipple) {
     super.connectedCallback();
   }
 
-  disconnectCallback() {
+  disconnectedCallback() {
     window.removeEventListener('dragstart', this.setReady, { capture: true });
     window.removeEventListener('dragend', this.removeReady, { capture: true });
     super.disconnectedCallback();

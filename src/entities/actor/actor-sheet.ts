@@ -224,7 +224,7 @@ export class ActorEPSheet implements EntitySheet {
       const hud = document.getElementById('hud');
       if (hud) {
         const { w, h, x, y, document: data } = token;
-        const { scale } = data;
+        const scale = data.texture?.scaleX ?? 1;
         const div = document.createElement('div');
         hud.append(
           assignStyles(div, {

@@ -139,7 +139,12 @@ export class UpdateStore<T extends UpdateStoreData> {
     keys.reduce((obj, key, index) => {
       if (index === finalIndex) {
         if (finalValue === undefined && first(keys) === 'flags')
-          obj[`-=${key}`] = null;
+          // V14 deletion operator; '-=key' is deprecated until V16.
+          obj[key] = (
+            foundry.data as unknown as {
+              operators: { ForcedDeletion: { create(): JsonValue } };
+            }
+          ).operators.ForcedDeletion.create();
         else {
           const current = obj[key];
           obj[key] =
