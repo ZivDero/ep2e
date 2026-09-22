@@ -8,6 +8,12 @@ This is a fork of [Bubz43/ep2e](https://github.com/Bubz43/ep2e) updated for **Fo
 
 `https://github.com/ZivDero/ep2e/releases/latest/download/system.json`
 
+### Upgrading an existing world
+
+- **Back up the world first.** Opening a world in Foundry V14 migrates it, and V14 worlds can't be opened in V13 again.
+- Installing this fork replaces an installed copy of the original system, since both use the id `ep2e`.
+- Foundry V14 turns measured templates into Scene Regions. Area effects are now placed as regions. Areas placed before the upgrade may lose their edit button on chat cards and explosives; remove and place them again if needed.
+
 ## Status
 
 The system is largely stable, but there are rough edges and unfinished features. Discoverability of features is sometimes a bit lacking. The original author's [discord](https://discord.gg/zs4jMnFqjx) server covers the system in general.
@@ -24,6 +30,7 @@ The system is largely stable, but there are rough edges and unfinished features.
 
 - PopOut! - The way it works is largely incompatible with how UI elements are rendered. An alternative, albeit a more resource intensive one, is to open a new tab with the same url.
 - TurnMarker - The system uses a custom combat tracker to better support Eclipse Phase options, which is sadly incompatible with this module.
+- Foundry V14 pop-out windows: the combat tracker, chat log and chat pop-outs can't be detached into separate browser windows, because the system's elements only work in the main window. Other apps can still be detached.
 
 ### **Future**
 
