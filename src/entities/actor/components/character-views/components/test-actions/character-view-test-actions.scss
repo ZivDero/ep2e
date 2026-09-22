@@ -63,7 +63,7 @@ sl-details {
 
 .aptitudes-list {
   column-count: 3;
-  font-family: var(--font-mono);
+  font-family: var(--ep-font-mono);
 }
 
 .aptitude-item {
@@ -196,7 +196,7 @@ sl-details {
 .rep-item {
   @include textButton();
   --mdc-icon-size: 1.25rem;
-  font-family: var(--font-mono);
+  font-family: var(--ep-font-mono);
 
   &:hover {
     background: alphav(var(--ep-color-text), 0.04);
