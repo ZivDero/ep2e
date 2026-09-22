@@ -2,7 +2,7 @@ import * as v from '@badrap/valita';
 import { ValitaError } from '@badrap/valita';
 import { last } from 'remeda';
 import type { RequireExactlyOne } from 'type-fest';
-import { createMessage, rollModeToVisibility } from './chat/create-message';
+import { createMessage, currentMessageVisibility } from './chat/create-message';
 import type { DamageMessageData } from './chat/message-data';
 import { lastClickedEl } from './components/window/window-controls';
 import { AptitudeType } from './data-enums';
@@ -74,7 +74,7 @@ const rollCustomAttack = async (data: unknown) => {
           rolledFormulas,
         },
       },
-      visibility: rollModeToVisibility(game.settings.get('core', 'rollMode')),
+      visibility: currentMessageVisibility(),
     });
   } catch (error) {
     if (error instanceof ValitaError) {

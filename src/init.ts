@@ -1,7 +1,7 @@
 import { html, render } from 'lit-html';
 import { first, values } from 'remeda';
 import type { PartialDeep } from 'type-fest';
-import { createMessage, rollModeToVisibility } from './chat/create-message';
+import { createMessage, currentMessageVisibility } from './chat/create-message';
 import { onChatMessageRender } from './chat/message-hooks';
 import { combatSocketHandler, tokenIsInCombat } from './combat/combat-tracker';
 import { CombatView } from './combat/components/combat-view/combat-view';
@@ -267,9 +267,7 @@ Hooks.once('ready', async () => {
                     ],
                   },
                 },
-                visibility: rollModeToVisibility(
-                  game.settings.get('core', 'rollMode'),
-                ),
+                visibility: currentMessageVisibility(),
               });
               popover.open = false;
             },

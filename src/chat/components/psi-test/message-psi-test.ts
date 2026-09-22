@@ -1,4 +1,4 @@
-import { createMessage, rollModeToVisibility } from '@src/chat/create-message';
+import { createMessage, currentMessageVisibility } from '@src/chat/create-message';
 import type {
   PsiTestData,
   SuccessTestMessageData,
@@ -196,9 +196,7 @@ export class MessagePsiTest extends MessageElement {
         await createMessage({
           roll,
           flavor: localize('mentalArmor'),
-          visibility: rollModeToVisibility(
-            game.settings.get('core', 'rollMode'),
-          ),
+          visibility: currentMessageVisibility(),
         });
         finalEffects.push({
           ...createEffect.armor({

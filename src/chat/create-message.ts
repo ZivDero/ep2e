@@ -11,21 +11,37 @@ export enum MessageVisibility {
   Blind = 'blind',
 }
 
-export const rollModeToVisibility = (rollMode: string) => {
-  switch (rollMode) {
-    case CONST.DICE_ROLL_MODES.BLIND:
+/**
+ * Map a core message mode to EP visibility. Accepts V14 message modes
+ * (public, gm, blind, self, ic) and the legacy roll modes (publicroll,
+ * gmroll, blindroll, selfroll). In-character and unknown modes are public.
+ */
+export const rollModeToVisibility = (mode: string) => {
+  switch (mode) {
+    case 'blind':
+    case 'blindroll':
       return MessageVisibility.Blind;
 
-    case CONST.DICE_ROLL_MODES.PRIVATE:
+    case 'gm':
+    case 'gmroll':
       return MessageVisibility.WhisperGM;
 
-    case CONST.DICE_ROLL_MODES.SELF:
+    case 'self':
+    case 'selfroll':
       return MessageVisibility.Self;
 
     default:
       return MessageVisibility.Public;
   }
 };
+
+/** The visibility of the user's currently selected chat message mode. */
+export const currentMessageVisibility = () =>
+  rollModeToVisibility(
+    game.settings.settings.has('core.messageMode')
+      ? game.settings.get('core', 'messageMode')
+      : game.settings.get('core', 'rollMode'),
+  );
 
 export type MessageInit = Partial<{
   data: MessageData;

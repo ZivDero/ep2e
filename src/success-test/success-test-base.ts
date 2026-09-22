@@ -1,4 +1,4 @@
-import { rollModeToVisibility } from '@src/chat/create-message';
+import { currentMessageVisibility } from '@src/chat/create-message';
 import {
   Action,
   ActionSubtype,
@@ -77,7 +77,7 @@ export abstract class SuccessTestBase {
   }
 
   readonly settings: WithUpdate<SuccessTestSettings> = {
-    visibility: rollModeToVisibility(game.settings.get('core', 'rollMode')),
+    visibility: currentMessageVisibility(),
     autoRoll: true,
     ready: false,
     update: this.recipe(
