@@ -541,17 +541,11 @@ export class ParticipantItem extends mix(LitElement).with(UseWorldTime) {
   private toggleDefeated() {
     const defeated = !this.participant.defeated;
     this.updateParticipant({ defeated });
-    const { activeToken } = this;
-    if (!activeToken) return;
-    const status = CONFIG.statusEffects.find(
-      (e) => e.id === CONFIG.Combat.defeatedStatusId,
+    // Token#toggleEffect is gone in V14; status effects live on the actor.
+    this.activeToken?.actor?.toggleStatusEffect(
+      CONFIG.specialStatusEffects.DEFEATED,
+      { overlay: true, active: defeated },
     );
-    const effect =
-      activeToken.actor && status ? status : CONFIG.controlIcons.defeated;
-    activeToken.toggleEffect(effect, {
-      overlay: true,
-      active: defeated,
-    });
   }
 
   private get canDelay() {
