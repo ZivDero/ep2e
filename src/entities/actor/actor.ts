@@ -1,9 +1,5 @@
 import { enumValues } from '@src/data-enums';
-import {
-  conditionIcons,
-  ConditionType,
-  iconToCondition,
-} from '@src/features/conditions';
+import { conditionIcons, ConditionType } from '@src/features/conditions';
 import type { TokenData } from '@src/foundry/foundry-cont';
 import { localize } from '@src/foundry/localization';
 import { canViewActor } from '@src/foundry/misc-helpers';
@@ -320,32 +316,21 @@ export class ActorEP extends Actor {
   }
 
   override async toggleStatusEffect(
-    effect: string | typeof CONFIG['statusEffects'][number] | null,
+    statusId: string,
     options: { overlay?: boolean | undefined; active?: boolean } = {},
   ) {
-    if (options.overlay) {
-      return super.toggleStatusEffect(effect, options);
+    const condition = enumValues(ConditionType).find((c) => c === statusId) as
+      | ConditionType
+      | undefined;
+    if (options.overlay || !condition) {
+      return super.toggleStatusEffect(statusId, options);
     }
 
-    const texture =
-      typeof effect === 'string'
-        ? effect
-        : effect?.icon ?? CONFIG.controlIcons.defeated;
-
-    const condition = enumValues(ConditionType).includes(
-      texture as ConditionType,
-    )
-      ? (texture as ConditionType)
-      : iconToCondition.get(texture);
-    if (!condition) {
-      return super.toggleStatusEffect(effect, options);
-    }
-
-    const newConditions = new Set(this.conditions);
-    const active = !newConditions.delete(condition);
-    await this.proxy.updateConditions(
-      active ? [...newConditions, condition] : [...newConditions],
-    );
+    const newConditions = new Set<ConditionType>(this.conditions);
+    const active = options.active ?? !newConditions.has(condition);
+    if (active) newConditions.add(condition);
+    else newConditions.delete(condition);
+    await this.proxy.updateConditions([...newConditions]);
     return;
   }
 }

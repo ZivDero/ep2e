@@ -542,10 +542,12 @@ export class ParticipantItem extends mix(LitElement).with(UseWorldTime) {
     const defeated = !this.participant.defeated;
     this.updateParticipant({ defeated });
     // Token#toggleEffect is gone in V14; status effects live on the actor.
-    this.activeToken?.actor?.toggleStatusEffect(
-      CONFIG.specialStatusEffects.DEFEATED,
-      { overlay: true, active: defeated },
-    );
+    this.activeToken?.actor
+      ?.toggleStatusEffect(CONFIG.specialStatusEffects.DEFEATED, {
+        overlay: true,
+        active: defeated,
+      })
+      .catch((error: unknown) => console.error(error));
   }
 
   private get canDelay() {

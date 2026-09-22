@@ -1,5 +1,5 @@
 import { html, render } from 'lit-html';
-import { compact, first, values } from 'remeda';
+import { first, values } from 'remeda';
 import type { PartialDeep } from 'type-fest';
 import { createMessage, rollModeToVisibility } from './chat/create-message';
 import { onChatMessageRender } from './chat/message-hooks';
@@ -83,7 +83,6 @@ Hooks.once('init', () => {
     'icons/nested-eclipses.svg',
   );
   CONFIG.Actor.documentClass = ActorEP;
-  foundry.documents.collections.Actors.unregisterSheet('core', foundry.appv1.sheets.ActorSheet);
   foundry.documents.collections.Actors.registerSheet(EP.Name, ActorEPSheet, { makeDefault: true });
 
   CONFIG.Scene.documentClass = SceneEP;
@@ -93,16 +92,23 @@ Hooks.once('init', () => {
   CONFIG.User.documentClass = UserEP;
   CONFIG.Item.documentClass = ItemEP;
 
-  foundry.documents.collections.Items.unregisterSheet('core', foundry.appv1.sheets.ItemSheet);
   foundry.documents.collections.Items.registerSheet(EP.Name, ItemEPSheet, { makeDefault: true });
   CONFIG.Combat.initiative.decimals = 2;
-  CONFIG.statusEffects = compact([
-    CONFIG.statusEffects[0],
-    ...enumValues(ConditionType).map((condition) => ({
-      icon: conditionIcons[condition],
-      id: condition as string,
-      label: `${EP.LocalizationNamespace}.${condition}`,
-    })),
+  // V14 keys status effects by id and uses name/img. Keep core's defeated
+  // status: the combat view's defeated toggle applies it as an overlay.
+  const defeated = Object.values(
+    CONFIG.statusEffects as Record<string, { id: string }>,
+  ).find(({ id }) => id === CONFIG.specialStatusEffects.DEFEATED);
+  CONFIG.statusEffects = Object.fromEntries([
+    ...(defeated ? [[defeated.id, defeated]] : []),
+    ...enumValues(ConditionType).map((condition) => [
+      condition,
+      {
+        id: condition,
+        name: `${EP.LocalizationNamespace}.${condition}`,
+        img: conditionIcons[condition],
+      },
+    ]),
   ]);
 
   addEPSocketHandler('mutateCombat', combatSocketHandler);
