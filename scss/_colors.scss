@@ -9,13 +9,10 @@
 
 body {
   @include defineColorHSL(--ep-color-primary, 240, 40%, 52%);
-  // @include defineColorHSL(--ep-color-primary, 207, 70%, 55%);
   @include defineColorHSL(--ep-color-primary-alt, 253, 64%, 79%);
   @include defineColorHSL(--ep-color-secondary, 196, 62%, 48%);
   @include defineColorHSL(--ep-color-grey, 210, 14%, 53%);
   @include defineColorHSL(--ep-color-border, 210, 5%, 20%);
-  // @include defineColorHSL(--ep-color-bg, 260, 12%, 6%);
-  // @include defineColorHSL(--ep-color-bg, 260, 12%, 8.5%);
   @include defineColorHSL(--ep-color-bg, 0, 0%, 7%);
   @include defineColorHSL(--ep-color-bg-alt, 200, 6%, 10%);
 
@@ -25,4 +22,17 @@ body {
   @include defineColorHSL(--ep-color-text-lighter, 0, 0%, 65%);
   @include defineColorHSL(--ep-color-text-disabled, 0, 0%, 34%);
   @include defineColorHSL(--ep-color-foundry, 24, 100%, 50%);
+
+  // Text-safe variants: primary and negative are fills, too dark to read as
+  // text on EP's backgrounds (2.9:1 and 1.7:1). These clear WCAG AA (> 5:1).
+  @include defineColorHSL(--ep-color-primary-text, 240, 55%, 72%);
+  @include defineColorHSL(--ep-color-negative-text, 349, 75%, 66%);
+
+  // Semantic aliases for new and restyled code.
+  --ep-color-surface: var(--ep-color-bg);
+  --ep-color-surface-alt: var(--ep-color-bg-alt);
+  --ep-color-text-muted: var(--ep-color-text-lighter);
+  --ep-color-danger: var(--ep-color-negative-text);
+  --ep-color-accent: var(--ep-color-primary-text);
+  --ep-color-focus: var(--ep-color-secondary);
 }

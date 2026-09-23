@@ -76,7 +76,7 @@ header {
   position: relative;
   @include textButton();
   mwc-icon {
-    color: var(--ep-color-negative);
+    color: var(--ep-color-negative-text);
     &.support {
       color: var(--ep-color-secondary);
       filter: hue-rotate(-30deg);

@@ -21,7 +21,7 @@
 
 mwc-icon-button-toggle {
   grid-area: icon;
-  color: var(--ep-color-negative);
+  color: var(--ep-color-negative-text);
   --mdc-theme-text-disabled-on-light: currentColor;
   &[on] {
     color: var(--ep-color-secondary);

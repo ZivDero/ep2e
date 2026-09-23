@@ -331,7 +331,7 @@ h3 {
   padding-right: 0.5rem;
   position: relative;
   mwc-icon {
-    color: var(--ep-color-negative);
+    color: var(--ep-color-negative-text);
     &.support {
       color: var(--ep-color-secondary);
       filter: hue-rotate(-30deg);
@@ -375,6 +375,7 @@ h3 {
   }
   &:focus {
     outline: none;
+    @include focus-ring;
     background: alphav(var(--ep-color-text), 0.09);
   }
   img {
@@ -399,6 +400,7 @@ h3 {
   &:focus {
     background: alphav(var(--ep-color-text), 0.08);
     outline: none;
+    @include focus-ring;
   }
   &:active {
     background: alphav(var(--ep-color-text), 0.1);
@@ -804,7 +806,7 @@ enriched-html {
     position: relative;
     margin-left: -0.5rem;
     mwc-icon {
-      color: var(--ep-color-negative);
+      color: var(--ep-color-negative-text);
       &.support {
         color: var(--ep-color-secondary);
         filter: hue-rotate(-30deg);

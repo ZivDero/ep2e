@@ -41,7 +41,7 @@ ol {
       color: var(--ep-color-grey);
     }
     &:nth-of-type(2) {
-      color: var(--ep-color-primary);
+      color: var(--ep-color-primary-text);
     }
     &:nth-of-type(3) {
       color: var(--ep-color-secondary);
@@ -88,7 +88,7 @@ ol {
           color: var(--ep-color-grey);
         }
         &:nth-of-type(2) {
-          color: var(--ep-color-primary);
+          color: var(--ep-color-primary-text);
         }
         &:nth-of-type(3) {
           color: var(--ep-color-secondary);
