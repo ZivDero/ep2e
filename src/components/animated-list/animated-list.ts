@@ -1,5 +1,5 @@
 import { debounce } from '@src/utility/decorators';
-import { assignStyles, resizeObsAvailable } from '@src/utility/dom';
+import { assignStyles, motion, resizeObsAvailable } from '@src/utility/dom';
 import { customElement, html, LitElement, property, query } from 'lit-element';
 import styles from './animated-list.scss';
 
@@ -145,7 +145,7 @@ export class AnimatedList extends LitElement {
                   },
                   { transform: 'translate(0)' },
                 ],
-                { duration: animationDuration, easing: 'ease-out' },
+                motion({ duration: animationDuration, easing: 'ease-out' }),
               ),
             );
           }
@@ -160,7 +160,7 @@ export class AnimatedList extends LitElement {
                 opacity: [0.5, 1],
                 transformOrigin: [transformOrigin, transformOrigin],
               },
-              { duration: animationDuration, easing: 'ease-in-out' },
+              motion({ duration: animationDuration, easing: 'ease-in-out' }),
             );
             keyframes.push(keyframe);
           }
@@ -193,7 +193,7 @@ export class AnimatedList extends LitElement {
                 opacity: [0.75, 0.25],
                 transformOrigin: [transformOrigin, transformOrigin],
               },
-              { duration: animationDuration / 2, easing: 'ease-in-out' },
+              motion({ duration: animationDuration / 2, easing: 'ease-in-out' }),
             ).onfinish = () => deletedEl.remove();
           });
         });

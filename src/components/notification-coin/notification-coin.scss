@@ -37,6 +37,7 @@
   .coin {
     animation: flip 10s infinite;
     will-change: transform;
+    @include reduced-motion;
   }
 }
 

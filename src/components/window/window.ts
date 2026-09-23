@@ -8,6 +8,7 @@ import {
   isButton,
   joinCoor,
   leftTop,
+  motion,
   px,
   repositionIfNeeded,
   resizeElement,
@@ -212,7 +213,7 @@ export class SlWindow extends LitElement {
       if (!this.style.opacity) {
         this.animate(
           { opacity: [0, 1], transform: ['scale(0.97)', 'scale(1)'] },
-          { duration: 300, easing: 'ease-out' },
+          motion({ duration: 300, easing: 'ease-out' }),
         );
       }
     });
@@ -283,7 +284,7 @@ export class SlWindow extends LitElement {
     return new Promise<void>((resolve) => {
       this.animate(
         { opacity: [1, 0], transform: ['scale(1)', 'scale(0.97)'] },
-        { duration: 200 },
+        motion({ duration: 200 }),
       ).onfinish = () => {
         this.style.pointerEvents = '';
 
@@ -303,7 +304,7 @@ export class SlWindow extends LitElement {
         {
           width: [px(offsetWidth), px(this.offsetWidth)],
         },
-        { duration: 200 },
+        motion({ duration: 200 }),
       );
       if (!this.minimized) {
         contentContainer.style.overflowX = 'hidden';
@@ -311,7 +312,7 @@ export class SlWindow extends LitElement {
           {
             opacity: [0, 0, 0.75, 1],
           },
-          { duration: 350, easing: 'ease-out' },
+          motion({ duration: 350, easing: 'ease-out' }),
         ).onfinish = () => (contentContainer.style.overflowX = '');
       }
     });
@@ -373,16 +374,18 @@ export class SlWindow extends LitElement {
         ],
       },
       {
-        ...shadowAnimationOptions,
-        duration: shadowAnimationOptions.duration - 100,
+        ...motion({
+          ...shadowAnimationOptions,
+          duration: shadowAnimationOptions.duration - 100,
+        }),
       },
     ).onfinish = () => {
       const opacity = [1, 0];
-      div.animate({ opacity }, shadowAnimationOptions).onfinish = () =>
+      div.animate({ opacity }, motion(shadowAnimationOptions)).onfinish = () =>
         div.remove();
       this.animate(
         { opacity: opacity.reverse() },
-        { duration: shadowAnimationOptions.duration },
+        motion({ duration: shadowAnimationOptions.duration }),
       ).onfinish = onFinish;
     };
   }

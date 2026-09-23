@@ -36,6 +36,7 @@ button {
   opacity: 0.75;
   cursor: pointer;
   outline: none;
+  @include focus-ring(2px);
   --mdc-icon-size: 1.5rem;
   &:active {
     transform: scale(0.95);

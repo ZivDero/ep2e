@@ -90,9 +90,11 @@
     opacity: 1;
     // transition: opacity 1500ms ease-out 100ms;
     animation: fadeIn 100ms ease-in-out both;
+    @include reduced-motion;
 
     &.animate {
       animation: zoom 150ms both ease-in-out 100ms;
+      @include reduced-motion;
     }
   }
 

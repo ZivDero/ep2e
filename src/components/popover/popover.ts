@@ -1,6 +1,6 @@
 import { IconButtonToggle } from '@material/mwc-icon-button-toggle';
 import { debounce } from '@src/utility/decorators';
-import { assignStyles, px, resizeObsAvailable } from '@src/utility/dom';
+import { assignStyles, motion, px, resizeObsAvailable } from '@src/utility/dom';
 import {
   customElement,
   html,
@@ -306,7 +306,7 @@ export class Popover extends mix(LitElement).with(ListenerSubscription) {
         opacity: [1, 0.25],
         transform: ['scale(1)', 'scale(0.5)'],
       },
-      { duration: noAnimation ? 0 : 100, easing: 'ease-in-out' },
+      motion({ duration: noAnimation ? 0 : 100, easing: 'ease-in-out' }),
     );
     closingAnimation.onfinish = () => {
       floater.togglePopover?.(false);

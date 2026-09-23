@@ -2,6 +2,7 @@ import { ButtonBase } from '@material/mwc-button/mwc-button-base';
 import { styles as buttonStyles } from '@material/mwc-button/styles.css.js';
 import { customElement, property } from 'lit-element';
 import { stopEvent } from 'weightless';
+import { motion } from '@src/utility/dom';
 import styles from './submit-button.scss';
 
 const anim = [
@@ -41,11 +42,11 @@ export class SubmitButton extends ButtonBase {
     const { complete } = this;
     this.style.pointerEvents = 'none';
     if (!complete) {
-      this.animate(anim, { duration: 300, easing: 'ease-in-out' });
+      this.animate(anim, motion({ duration: 300, easing: 'ease-in-out' }));
     } else {
       this.animate(
         { transform: [1, 0.5, 1].map((s) => `scale(${s})`) },
-        { duration: 300, easing: 'ease-in-out' },
+        motion({ duration: 300, easing: 'ease-in-out' }),
       );
     }
 

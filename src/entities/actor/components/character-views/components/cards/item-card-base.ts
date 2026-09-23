@@ -4,6 +4,7 @@ import type { ItemProxy } from '@src/entities/item/item';
 import { itemMenuOptions } from '@src/entities/item/item-views';
 import { localize } from '@src/foundry/localization';
 import { openMenu } from '@src/open-menu';
+import { motion } from '@src/utility/dom';
 import { clickIfEnter } from '@src/utility/helpers';
 import { html, LitElement, property, TemplateResult } from 'lit-element';
 import styles from './item-card-base-styles.scss';
@@ -52,7 +53,7 @@ export abstract class ItemCardBase extends LazyRipple(LitElement) {
             'transparent',
           ],
         },
-        { duration: 1500, easing: 'ease-in-out' },
+        motion({ duration: 1500, easing: 'ease-in-out' }),
       );
     }
   }

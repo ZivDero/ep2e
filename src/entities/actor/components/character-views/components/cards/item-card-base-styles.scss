@@ -39,6 +39,7 @@
     }
     & ~ * {
       animation: slideIn 200ms ease-out;
+      @include reduced-motion;
     }
   }
 }
@@ -55,6 +56,7 @@
 
   &:focus {
     outline: none;
+    @include focus-ring;
   }
   .icon {
     grid-area: img;

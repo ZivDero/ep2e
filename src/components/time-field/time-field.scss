@@ -53,6 +53,7 @@
   border: 0;
   padding: 0;
   outline: none;
+  @include focus-ring(1px);
   font-size: 1.7rem;
   color: var(--ep-color-text-lighter);
   line-height: 1rem;

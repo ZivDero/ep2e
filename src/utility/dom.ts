@@ -5,6 +5,12 @@ import { nonNegative } from './helpers';
 
 export const resizeObsAvailable = 'ResizeObserver' in window;
 
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+/** Collapses an animation to its end state when the user prefers reduced motion. */
+export const motion = <T extends KeyframeAnimationOptions>(options: T): T =>
+  reducedMotion.matches ? { ...options, duration: 0, delay: 0 } : options;
+
 export const getParentElement = (element: HTMLElement) => {
   const { parentElement } = element;
   if (parentElement) return parentElement;
@@ -98,7 +104,7 @@ export const repositionIfNeeded = (element: HTMLElement, bounds?: Bounds) => {
             `translate(${[left, top].map(prop('change')).map(px).join(', ')})`,
           ],
         },
-        positionKeyframes,
+        motion(positionKeyframes),
       ).onfinish = () => {
         assignStyles(element, style);
         resolve(outOfBounds);

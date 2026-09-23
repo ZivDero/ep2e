@@ -46,6 +46,7 @@ sl-header {
 [part='header'] {
   position: relative;
   outline: none;
+  @include focus-ring;
 
   &[tabindex='0'] {
     cursor: pointer;

@@ -259,6 +259,11 @@ slot[name='after'] {
     cursor: pointer;
     z-index: 10;
 
+    &:focus-visible {
+      opacity: 1;
+      @include focus-outline(1px);
+    }
+
     &[disabled] {
       pointer-events: none;
       color: grey;

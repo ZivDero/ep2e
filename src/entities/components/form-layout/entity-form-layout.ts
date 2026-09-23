@@ -1,4 +1,4 @@
-import { resizeObsAvailable } from '@src/utility/dom';
+import { motion, resizeObsAvailable } from '@src/utility/dom';
 import { notEmpty } from '@src/utility/helpers';
 import {
   customElement,
@@ -84,7 +84,7 @@ export class EntityFormLayout extends LitElement {
           ?.assignedElements() || [],
       )?.animate(
         { transform: ['translateY(-100%)', 'translateY(0)'] },
-        { duration: 800, easing: 'ease-out' },
+        motion({ duration: 800, easing: 'ease-out' }),
       );
     });
   }

@@ -30,6 +30,18 @@
   }
 }
 
+// Keyboard focus indicator for elements that drop the browser outline.
+@mixin focus-outline($offset: -2px) {
+  outline: 2px solid var(--ep-color-focus);
+  outline-offset: $offset;
+}
+
+@mixin focus-ring($offset: -2px) {
+  &:focus-visible {
+    @include focus-outline($offset);
+  }
+}
+
 @mixin inputReset() {
   input[type='number'] {
     -moz-appearance: textfield !important;
@@ -406,6 +418,14 @@
 //     slideOutUp
 //
 // -----------------------------------------------------------------------
+@mixin reduced-motion {
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 1ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 @mixin animate-css($type, $duration: null, $repeat: null) {
   //     Animation name prefix
   $prefix: '';
@@ -472,6 +492,9 @@
   @if $type==lightSpeedOut {
     animation-timing-function: ease-in;
   }
+
+  //    Jump to the end state instead of moving
+  @include reduced-motion;
 
   //    Keyframes
   $keyframerenderonce: if(

@@ -31,6 +31,7 @@
   position: relative;
   padding: var(--health-item-padding, 0.25rem 0.5rem);
   outline: none;
+  @include focus-ring;
   row-gap: 0.125rem;
   font-family: var(--font-2);
 

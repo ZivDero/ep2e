@@ -120,6 +120,7 @@ button {
   background: rgba(black, 0.2);
   border: 1px solid darkslategray;
   outline: 0;
+  @include focus-ring(1px);
   color: white;
   border-radius: 4px;
   cursor: pointer;
