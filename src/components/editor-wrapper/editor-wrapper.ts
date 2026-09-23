@@ -2,6 +2,7 @@ import type { CircularProgress } from '@material/mwc-circular-progress';
 import type { UpdateActions } from '@src/entities/update-store';
 import { NotificationType, notify } from '@src/foundry/foundry-apps';
 import { localize } from '@src/foundry/localization';
+import { motion } from '@src/utility/dom';
 import {
   customElement,
   LitElement,
@@ -10,6 +11,7 @@ import {
   PropertyValues,
   query,
 } from 'lit-element';
+import { nothing } from 'lit-html';
 import type { EnrichedHTML } from '../enriched-html/enriched-html';
 import styles from './editor-wrapper.scss';
 
@@ -184,7 +186,7 @@ export class EditorWrapper extends LitElement {
     try {
       this.contentArea?.animate(
         { opacity: [0, 1] },
-        { duration: 200, easing: 'ease-in-out', fill: 'forwards' },
+        motion({ duration: 200, easing: 'ease-in-out', fill: 'forwards' }),
       );
       this.updateActions.commit(content);
     } catch (error) {
@@ -196,16 +198,18 @@ export class EditorWrapper extends LitElement {
     const editing = this.state !== EditorState.Viewing;
     return html`
       <header>
-        ${this.heading || localize('description')}
-        <mwc-icon-button-toggle
-          class="toggle"
-          slot="actions"
-          ?on=${this.state === EditorState.Editing}
-          onIcon="save"
-          offIcon="wysiwyg"
-          ?disabled=${this.disabled || this.state === EditorState.Opening}
-          @click=${this.toggleEditor}
-        ></mwc-icon-button-toggle>
+        <span class="heading">${this.heading || localize('description')}</span>
+        ${this.disabled
+          ? nothing
+          : html`<mwc-button
+              class="toggle"
+              dense
+              outlined
+              icon=${editing ? 'save' : 'edit'}
+              label=${localize(editing ? 'save' : 'edit')}
+              ?disabled=${this.state === EditorState.Opening}
+              @click=${this.toggleEditor}
+            ></mwc-button>`}
       </header>
 
       <enriched-html
@@ -213,6 +217,11 @@ export class EditorWrapper extends LitElement {
         .content=${this.content}
         .document=${this.document}
       ></enriched-html>
+      ${!editing && !this.disabled && !this.content?.trim()
+        ? html`<button class="empty" @click=${this.openEditor}>
+            ${localize('edit')} ${localize('description').toLocaleLowerCase()}…
+          </button>`
+        : nothing}
       <slot name="editor"></slot>
 
       <mwc-circular-progress
