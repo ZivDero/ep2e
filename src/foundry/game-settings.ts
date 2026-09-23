@@ -113,7 +113,7 @@ export const registerEPSettings = once(() => {
       scope: 'client',
       hint: 'Makes the background on character sheets fully opaque.',
       config: true,
-      default: false,
+      default: true,
       type: Boolean,
     },
   );
