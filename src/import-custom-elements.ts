@@ -17,6 +17,7 @@ import '@material/mwc-radio';
 import '@material/mwc-slider';
 import '@material/mwc-switch';
 import '@material/mwc-tab-bar';
+import './components/icon-button-labels';
 import { LitVirtualizer } from 'lit-virtualizer';
 import 'web-animations-js';
 // Weightless Components
