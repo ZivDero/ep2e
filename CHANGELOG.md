@@ -12,6 +12,12 @@ Foundry V14 release. This version requires Foundry V14 and no longer supports V1
 - Chat visibility follows V14's message modes; the in-character mode posts publicly
 - Token ranges are measured as a straight line between token centres, including elevation, and use the scene's grid distance for the large-token correction
 - The combat tracker, chat log and chat pop-outs can't be detached into separate V14 windows
+- Descriptions have a labelled Edit button, and empty ones show a prompt to add one
+- EP windows are more opaque, and "Disable Sheet Transparency" is on by default
+- Error and highlight text is brighter for readability
+- Keyboard focus is visible on sheet rows, cards and buttons; icon buttons have readable names for screen readers
+- Animations are skipped when the system's "reduce motion" preference is on
+- EP's chat styling only applies to messages EP renders, and its component tokens no longer sit on the page body
 
 ### Fixed
 

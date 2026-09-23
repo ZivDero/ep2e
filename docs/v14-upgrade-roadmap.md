@@ -463,20 +463,20 @@ Starts after Phase 7 passes.
 The UI is 172 Lit custom elements in shadow DOM, a custom window manager, a dark-only token set (`scss/_colors.scss`, `scss/_css-properties.scss`) and Material Web Components 0.22 (about 560 uses).
 
 ### 9A Light pass (about 1–2 weeks)
-- [ ] Fix the broken tokens:
+- [x] Fix the broken tokens:
   - `--mdc-button-outline-color: --mdc-theme-primary` (missing `var()`)
   - `--label-color: hsl(0, 0, 80%)` (invalid)
   - `--font-alt` (used but never defined)
-- [ ] Contrast: `--ep-color-negative` as text (about 1.7:1) and `--ep-color-primary` (about 2.9:1) → WCAG AA.
-- [ ] Semantic tokens, plus spacing (`--ep-space-*`) and type (`--ep-text-*`) scales.
-- [ ] Scope EP's weightless/MWC tokens (`--dialog-bg`, `--label-color`, `--list-item-*`, `--primary-hue`, …) to EP hosts instead of `body`, so they can't restyle core UI (see `--font-mono`, 5.6).
-- [ ] A shared `:focus-visible` ring; remove the `outline: 0 !important` kills; `aria-label`s on the 162 icon buttons.
-- [ ] `prefers-reduced-motion` handling.
-- [ ] Scope the global `.message` chat restyle to EP messages (add a class in `onChatMessageRender`).
+- [x] Contrast: `--ep-color-negative` as text (about 1.7:1) and `--ep-color-primary` (about 2.9:1) → WCAG AA. Text uses `--ep-color-negative-text` (6.0:1) and `--ep-color-primary-text` (5.9:1).
+- [x] Semantic tokens, plus spacing (`--ep-space-*`) and type (`--ep-text-*`) scales.
+- [x] Scope EP's weightless/MWC tokens (`--dialog-bg`, `--label-color`, `--list-item-*`, `--primary-hue`, …) to EP hosts instead of `body`, so they can't restyle core UI (see `--font-mono`, 5.6).
+- [x] A shared `:focus-visible` ring (`focus-ring` mixin) where EP removed the outline without a replacement; `aria-label`s on the icon buttons (patched once in `icon-button-labels.ts`: tooltip text, else a name for the icon).
+- [x] `prefers-reduced-motion` handling (`reduced-motion` mixin for CSS, `motion()` for Web Animations).
+- [x] Scope the global `.message` chat restyle to EP messages (`.ep-message`, added in `onChatMessageRender`).
   - Correction: manifest `styles` are already placed in core's `system` cascade layer (V13+), so an `@layer` wrapper would only create a sub-layer and wouldn't let core win.
   - Narrowing the selectors is the effective fix, or declaring the stylesheet with an explicit earlier `layer` in `system.json`.
-- [ ] Translucent windows: raise the default opacity, or make "Disable Sheet Transparency" the default.
-- [ ] Make the description edit control discoverable: a labelled "Edit" button instead of a bare icon toggle (a player couldn't find it during testing).
+- [x] Translucent windows: window opacity 0.75 → 0.88, and "Disable Sheet Transparency" defaults to on.
+- [x] Make the description edit control discoverable: a labelled "Edit" button instead of a bare icon toggle (a player couldn't find it during testing). Empty descriptions show a prompt.
 
 ### 9B Medium pass (about 1–2 months)
 - [ ] Replace MWC and weightless, starting at the chokepoints:
