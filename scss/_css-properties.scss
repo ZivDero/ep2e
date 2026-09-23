@@ -1,7 +1,31 @@
+// Every place EP mounts its own elements. Tokens for third-party components
+// (MWC, Weightless) and EP's short-named ones are set here instead of on
+// <body>, so they can't leak into core or module UI.
+$ep-hosts: '.ep-window-container, ep-overlay, .ep-extra-info, combat-view, .message.ep-message, mwc-menu, .ep-compendium-search';
+
 body {
+  --ep-font-mono: 'Fira Code', monospace;
+
+  // Spacing and type scales for new and restyled code.
+  --ep-space-1: 0.125rem;
+  --ep-space-2: 0.25rem;
+  --ep-space-3: 0.5rem;
+  --ep-space-4: 0.75rem;
+  --ep-space-5: 1rem;
+  --ep-space-6: 1.5rem;
+
+  --ep-text-xs: 0.75rem;
+  --ep-text-sm: 0.875rem;
+  --ep-text-md: 1rem;
+  --ep-text-lg: 1.125rem;
+  --ep-text-xl: 1.375rem;
+}
+
+#{$ep-hosts} {
   --font-1: Jost, sans-serif;
   --font-2: Rubik, sans-serif;
-  --ep-font-mono: 'Fira Code', monospace;
+  // Numeric displays
+  --font-alt: var(--font-2);
   --text-highlight: 0 0 6px currentColor;
 
   // Material Elements
@@ -14,7 +38,7 @@ body {
   --mdc-theme-on-surface: var(--ep-color-text);
   --mdc-button-disabled-fill-color: var(--ep-color-disabled);
   --mdc-button-disabled-ink-color: var(--ep-color-text-disabled);
-  --mdc-button-outline-color: --mdc-theme-primary;
+  --mdc-button-outline-color: var(--mdc-theme-primary);
   --mdc-button-disabled-outline-color: var(--ep-color-text-disabled);
   --mdc-radio-unchecked-color: var(--ep-color-primary);
   --mdc-radio-disabled-color: var(--ep-color-text-disabled);
@@ -31,39 +55,6 @@ body {
   --mdc-typography-body2-font-size: 1rem;
   --mdc-linear-progress-buffer-color: var(--ep-color-border);
 
-  // --app-datepicker-accent-color: var(--ep-color-secondary);
-  // --app-datepicker-bg-color: var(--ep-color-bg);
-  // --app-datepicker-color: var(--ep-color-text);
-  // --app-datepicker-disabled-day-color: var(--ep-color-text-disabled);
-  // --app-datepicker-selector-color: var(--ep-color-text-lighter);
-  // --app-datepicker-weekday-color: var(--ep-color-grey);
-
-  // --mdc-text-field-ink-color: var(--ep-color-text);
-  // --mdc-text-field-label-ink-color: var(--ep-color-text-lighter);
-  // --mdc-text-field-idle-line-color: var(--ep-color-text-lighter);
-  // --mdc-text-field-hover-line-color: var(--ep-color-text);
-  // --mdc-text-field-disabled-ink-color: var(--ep-color-text-disabled);
-  // --mdc-text-field-outlined-idle-border-color: var(--ep-color-text-lighter);
-  // --mdc-text-field-outlined-hover-border-color: var(--ep-color-text);
-  // --mdc-select-disabled-ink-color: var(--ep-color-text-disabled);
-  // --mdc-text-field-fill-color: hsla(0, 0%, 94%, 0.02);
-  // --mdc-select-fill-color: hsla(0, 0%, 94%, 0.02);
-  // --mdc-text-field-fill-color: transparent;
-  // --mdc-select-fill-color: transparent;
-  // --mdc-select-ink-color: var(--ep-color-text);
-  // --mdc-select-label-ink-color: var(--ep-color-text-lighter);
-  // --mdc-menu-item-height: 30px;
-  // --mdc-select-dropdown-icon-color: var(--ep-color-text);
-  // --mdc-select-hover-line-color: var(--ep-color-secondary);
-  // --mdc-select-outlined-idle-border-color: var(--ep-color-text-lighter);
-  // --mdc-select-outlined-hover-border-color: var(--ep-color-text);
-  // --mdc-select-idle-line-color: var(--ep-color-text-lighter);
-  // --mdc-typography-subtitle1-font-size: 1.02rem;
-  // --mdc-typography-subtitle1-font-family: var(--font-1);
-  // --mdc-typography-subtitle1-letter-spacing: 1px;
-  // --mdc-list-vertical-padding: 0px;
-  // --mdc-list-side-padding: 30px;
-  // --mdc-ripple-color: var(--ep-color-text);
   --mdc-ripple-color: currentColor;
   --mdc-ripple-hover-opacity: 0.07;
   --mdc-list-vertical-padding: 0px;
@@ -77,7 +68,7 @@ body {
   --secondary-hue: 200;
   --primary-saturation: 95%;
   --primary-lightness: 70%;
-  --label-color: hsl(0, 0, 80%);
+  --label-color: hsl(0, 0%, 80%);
   --label-font-family: var(--font-1);
   --label-font-size: 14px;
 

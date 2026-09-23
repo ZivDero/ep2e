@@ -65,6 +65,7 @@ export const onChatMessageRender = (message: ChatMessageEP, el: HTMLElement) => 
     return;
   }
 
+  el.classList.add('ep-message');
   const content = el.querySelector<HTMLElement>('.message-content')!;
   const { speaker, whisper, blind, flags } = message;
   const epData = flags[EP.Name];
