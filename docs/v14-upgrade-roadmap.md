@@ -11,11 +11,99 @@ The roadmap's claims were fact-checked on 2026-09-22 against the V14 API docs (b
 
 ---
 
-## Current state (2026-09-22)
+## Current state (2026-09-23)
 
-**Everything that can be done without a Foundry install is done** and committed on `v14-upgrade` (not pushed). The build and packs compile. Type errors are down from 696 to 107 (see 6.1). **Nothing has run on Foundry yet.** Every `[~]` item and all of Phase 7 need the live 14.368 instance.
+All offline work is done and committed on `v14-upgrade` (not pushed). Live testing on a local **Foundry 14.368** has started: the system loads, and the core flows work with **no errors and no deprecation warnings** (see [Live verification](#live-verification-2026-09-23-foundry-14368)). Two bugs were found on the live instance and fixed [d01f30f4].
 
-Next step when the instance exists: 0.5 → 0.6 → 0.7 (probe) → Phase 7.
+Still open: player / no-GM tests, Firefox, drag and drop, the explosive and area-effect chat-card UI, Dice So Nice, and migrating a real V13 world (none available yet).
+
+---
+
+## Live verification (2026-09-23, Foundry 14.368)
+
+Setup:
+- Foundry at `G:\Foundry Virtual Tabletop`, user data in `%LOCALAPPDATA%\FoundryVTT`.
+- `Data/systems/ep2e` is a junction to the repo.
+- Fresh world `ep2e-test`.
+- Tested as GM in the desktop app's browser pane (Chromium, emulated 1440×900).
+- A page-level error and warning recorder was active during the tests.
+
+**Bugs found live and fixed** [d01f30f4]:
+- **`registerSheet` rejects EP's sheet classes on V14** ("must be either a foundry.appv1.api.Application or a DocumentSheetV2"). It threw inside `init`, so status effects and the combat socket handler never registered. The registration is removed: `ActorEP`/`ItemEP` already override `sheet`.
+- **Rendered description stayed visible under the open editor.** `enriched-html`'s `:host { display: block }` overrode `[hidden]`.
+
+**Verified working** (no errors, no warnings):
+- **Load and data**
+  - System listed as compatible and loads.
+  - All 55 packs index.
+  - All 1,042 compendium documents load and build EP proxies. Core migrated the pack documents on world launch with no errors.
+  - Weapon Accessories entries have their text page.
+  - World migration ran on first load and stored 1.99.0.
+- **Sheets and creators**
+  - Character sheet renders.
+  - All 17 item forms and all 4 actor types open.
+  - EP actor and item creators open from the sidebar, including into a folder (`_onCreateEntry(event, target)`).
+  - Directory type labels show; one compendium search button.
+  - UserConfig lists only characters (sleeves filtered).
+- **Editor**
+  - ProseMirror opens focused, with Foundry's dark toolbar.
+  - Ctrl+S saves and closes.
+  - The toggle button saves.
+  - Ego descriptions save.
+  - Secret blocks show to the owner, with V14's Reveal control.
+- **Keyboard (data-loss check)**
+  - With a token controlled, Delete, Backspace, WASD, the arrows and Space typed into the ProseMirror editor and into a shadow-DOM text field (skill filter) all stay in the field.
+  - The token isn't deleted, moved or released.
+- **Chat and rolls**
+  - Skill tests in all four modes produce the right visibility: `public` (no whisper), `gm` (GM whisper), `blind` (whisper + blind), `self`.
+  - A custom damage roll posts.
+  - EP cards render in V14's chat markup (`.message-header`, `.message-sender`).
+- **Combat and tokens**
+  - The Token HUD lists the EP conditions plus core's `dead`.
+  - Toggling a condition works.
+  - The HUD combat button adds a combatant.
+  - The combat view's defeated toggle applies the `dead` overlay.
+  - Effect icons are drawn: the skull overlay (`showIcon` ALWAYS, non-temporary, which the old `temporaryEffects` filter would have missed) and the condition icon.
+  - Rounds advance.
+  - `<time-since>` renders ("1m ago").
+- **Ranged attack with a target** (crashed on 1.3.3)
+  - The window opens.
+  - Target distance 4.5 for a 3×4-square offset (5 units centre to centre, minus half a square), range band Close.
+  - The Blinded condition modifier is applied.
+- **Regions**
+  - EP's region data is accepted as written: `visibility` ALWAYS, `highlightMode` coverage, `levels: [canvas.level.id]`, owner = the placing user, 6 m → 600 px.
+  - Cone rotation 0 points right.
+  - Left-click places.
+  - Right-click and Escape cancel; the EP overlay un-fades and no region is left behind.
+  - A second placement can start afterwards.
+  - The Token layer stays active.
+  - Updating the shape rotation works.
+  - `testInsideRegion` finds the token in the cone and not outside it.
+  - Delete works.
+  - The EP movement preview (4 m circle) runs through `placeAreaTemplate`.
+- **Controls and apps**
+  - The middle-click menu lists V14 token tools; picking "Select Targets" works; the "Unconstrained Movement" toggle now actually toggles.
+  - Combat tracker and chat log can't be detached; other apps still can.
+- **Deprecations:** none logged by EP during load or use.
+
+**Probe results that changed the picture:**
+- `core.rollMode` returns **`null`** in 14.368. The 1.3.3 code would have made every whisper and blind roll public; the 2.2 change reads `core.messageMode`.
+- `CONFIG.statusEffects` is an Array that is also keyed by id (a compatibility object); both access styles work.
+- `MeasuredTemplate` and `canvas.templates` still exist as shims. `css/mce.css` is still served (200), so dropping the link was cleanup, not a fix.
+- `mergeObject`, `timeSince`, `DiceTerm`, `UserConfig`, `tinymce`, `CONFIG.TinyMCE` and `CONST.CHAT_MESSAGE_TYPES` are gone, as expected.
+
+**Not yet tested:**
+- Player and no-GM flows (socket relays, REGION_CREATE as a player, paused-game notice). These need a second user session.
+- Firefox.
+- Drag and drop.
+- The explosive settings form and area-effect chat card placement. The shared placement code and targeting are verified.
+- Dice So Nice.
+- A core Combat turn change (5.1h).
+- A migrated V13 world.
+
+**Notes:**
+- The browser tool's synthetic Escape doesn't reach Foundry's keyboard manager (missing `code`); a real `KeyboardEvent` does. It was a test artifact, not a bug.
+- The ego form doesn't refresh on actor updates when it's open without the character sheet. That is existing EP behaviour.
 
 ---
 
@@ -59,11 +147,11 @@ Next step when the instance exists: 0.5 → 0.6 → 0.7 (probe) → Phase 7.
 - [x] **0.4 Dev loop.** `npm ci` → `npm run pack` → `npm start` (Snowpack watch build into `build/`). Verified on Node 22.20.
   - **Repack only while Foundry is stopped or at the setup screen.** With the repo linked into `Data/systems/ep2e`, Foundry holds `packs/*` open as LevelDB databases, and `npm run pack` rewrites them.
   - V14 itself needs Node 24 when run as a Node server (14.355). The build toolchain hasn't been checked on Node 24; if one Node has to serve both, test the build there first.
-- [ ] **0.5 Instance hookup.** The system folder must be the repo root, because `system.json` references `./build/dist/index.js` and `./packs/*`. Junction the repo to `<FoundryData>/Data/systems/ep2e`.
-- [ ] **0.6 Test worlds.** One fresh world, and a **copy** of a real V13 world with actors (including unlinked tokens), items, combat state, chat history with rolls and area-effect cards, and placed templates. V14 migrates worlds one way (14.359).
+- [x] **0.5 Instance hookup.** Junction `%LOCALAPPDATA%\FoundryVTT\Data\systems\ep2e` → `D:\Projects\ep2e`. The system folder must be the repo root, because `system.json` references `./build/dist/index.js` and `./packs/*`. Junction the repo to `<FoundryData>/Data/systems/ep2e`.
+- [~] **0.6 Test worlds.** Fresh world `ep2e-test` created. Still needed: and a **copy** of a real V13 world with actors (including unlinked tokens), items, combat state, chat history with rolls and area-effect cards, and placed templates. V14 migrates worlds one way (14.359).
   - **Migration testing rule:** `migrateWorld` runs once per system version. Before each migration test, either bump the interim version (1.99.N) or re-copy the untouched V13 world. Otherwise the copy is already stamped and later migration steps never run on it.
   - Before opening the V13 copy in V14, export its actors, items, messages and settings as JSON so the stored data can be compared (flag-stored sleeves/vehicles/psi/onboard ALIs, chat Roll JSON, `templateIDs`, the `combatState` setting).
-- [ ] **0.7 Run the console probe** ([Appendix B](#appendix-b--console-probe)) and write the results into the VERIFY items.
+- [x] **0.7 Run the console probe** (results in Appendix B) ([Appendix B](#appendix-b--console-probe)) and write the results into the VERIFY items.
 
 ---
 
@@ -96,12 +184,12 @@ On 1.3.3 the system can't load on V14:
 
 - [x] **2.1 `CONST.CHAT_MESSAGE_TYPES` removed.** `type:` dropped; rolls already travel in `rolls`. [8289af53]
   - Dice So Nice 6.3.1 (verified on 14.368) still accepts EP's `game.dice3d.show` call. EP passes `synchronize=false`, so only the roller sees the dice. That is unchanged behaviour; see backlog 10.6.
-- [~] **2.2 Message modes.** `rollModeToVisibility` accepts both the V14 keys (`public|gm|blind|self|ic`) and the legacy ones, and `currentMessageVisibility()` reads `core.messageMode` when it is registered. `ChatMessage.applyMode` was deliberately *not* used: `public` would clear explicit whisper recipients (sleight sustain-end cards). [0d9c287a]
+- [x] **2.2 Message modes.** Verified live (`core.rollMode` returns `null` on 14.368). `rollModeToVisibility` accepts both the V14 keys (`public|gm|blind|self|ic`) and the legacy ones, and `currentMessageVisibility()` reads `core.messageMode` when it is registered. `ChatMessage.applyMode` was deliberately *not* used: `public` would clear explicit whisper recipients (sleight sustain-end cards). [0d9c287a]
   - VERIFY: `ChatMessageEP.isContentVisible`, `isBlind` and `isAuthor` (chat-message.ts:85-110) against V14 modes, including `ic`, and the 14.357 change to blind non-roll messages. Covered by the Phase 7 matrix.
 - [x] **2.3 Grid distance removed.** `canvas.grid.measurePath([a, b]).euclidean` with elevation in the waypoints. `.distance` would apply the diagonal rule and shrink diagonal ranges. [29a77bc3, 14af2701]
   - Behaviour change: `scene.grid.distance` replaces `scene.gridDistance`, which was already undefined on V13. That fixes the large-token range correction on scenes whose grid distance isn't 1.
 - [x] **2.4 `Token#toggleEffect` removed.** Uses `actor.toggleStatusEffect(CONFIG.specialStatusEffects.DEFEATED, {overlay, active})`, with errors caught. The overlay didn't work on V13 either. [787f2e84, 4020c58d]
-- [~] **2.5 Status effects.** A record keyed by id with `{id, name, img}`. Core's `dead` entry is kept (the 2.4 toggle needs it). `ActorEP.toggleStatusEffect` takes V14's string id and honours `options.active`. [4020c58d]
+- [x] **2.5 Status effects.** Verified live. A record keyed by id with `{id, name, img}`. Core's `dead` entry is kept (the 2.4 toggle needs it). `ActorEP.toggleStatusEffect` takes V14's string id and honours `options.active`. [4020c58d]
   - VERIFY: the Token HUD shows EP conditions with icons and names, and `_getStatusEffectChoices` (V14 added `order`).
 - [x] **2.6 `game.system.template` removed** → `game.model`. [8289af53]
   - This also fixes psi items without stored influences, onboard ALIs, the actor creator's default sleeve, and `migrateWorld`, which the version bump triggers on the first GM load.
@@ -122,7 +210,7 @@ V14 folded MeasuredTemplate into Regions (14.352).
 - Deprecated shims exist until V16, but they are lossy, and 1.3.3's code also calls grid APIs that V14 removed (`getSnappedPosition`, `getHighlightLayer`, `measureDistance`). So the old code throws on the first mouse move.
 - Branch commit `ffbcf177` was discarded.
 
-- [~] **3.1 Placement on Regions** (`src/foundry/canvas.ts`). [be2b4a49]
+- [x] **3.1 Placement on Regions** (verified live; the explosive form UI is still to test) (`src/foundry/canvas.ts`). [be2b4a49]
   - `placeAreaTemplate(data, {origin})` calls `canvas.regions.placeRegion`. Core handles follow-pointer, wheel rotation, left-click to confirm, and right-click/Escape to cancel. The old Enter-to-confirm shortcut is gone.
   - Region data:
     - circle/cone shapes in canvas pixels (`distance × distancePixels`); cone `angle`/`rotation` in degrees, `curvature: 'round'`
@@ -160,7 +248,7 @@ V14 folded MeasuredTemplate into Regions (14.352).
 
 ## Phase 4 — Rich text: TinyMCE → ProseMirror
 
-- [~] **4.1 `editor-wrapper` rewrite.** [e2b16159]
+- [x] **4.1 `editor-wrapper` rewrite.** Verified live; `[hidden]` fix in d01f30f4. [e2b16159]
   - Mounts `foundry.applications.ux.ProseMirrorEditor.create(target, content, {plugins: {menu, keyMaps}})` in its light DOM, with the menu and Ctrl+S wired to save. This is the pattern Draw Steel uses on V14.
   - Container `div.editor.prosemirror.themed.theme-dark > div.editor-content`.
   - Focus on open.
@@ -177,7 +265,7 @@ V14 folded MeasuredTemplate into Regions (14.352).
     - Ctrl+S
     - no core keybindings fire while typing (Phase 7)
 - [x] **4.2 Light-DOM host**, written once as `DescriptionEditorHost` and applied to `ItemFormBase`, `SleeveFormBase` and `EgoForm`; 21 forms render a forwarding slot. [831b386b]
-- [~] **4.3 Styling.**
+- [x] **4.3 Styling.** Verified live.
   - `global.scss` sizes the editor: 320px, resizable. Core CSS handles its insides.
   - `sl-window` no longer steals focus on Escape inside the editor.
   - [e2b16159]
@@ -193,18 +281,18 @@ V14 folded MeasuredTemplate into Regions (14.352).
 ## Phase 5 — Stale integrations and silent failures
 
 ### 5.1 Prototype patches (`src/foundry/prototype-overrides.ts`) [82b7ae13]
-- [~] **a. UserConfig character filter.** V13+ builds the `<select>` in `context.characterWidget`; EP wraps that widget and removes non-character options. VERIFY.
+- [x] **a. UserConfig character filter.** Verified live. V13+ builds the `<select>` in `context.characterWidget`; EP wraps that widget and removes non-character options. VERIFY.
 - [x] **b. `Game#_onPreventDragstart`**: deleted. It has been true-private since V13. Shadow-DOM drags work because `.ep-window-container` stops `dragstart`.
 - [x] **c. `Token#_onUpdate`**: kept.
-- [~] **d. `Token#_drawEffects`**: selects effects the way V14 core does (`appliedEffects` filtered by `showIcon`); the last overlay wins; the background sits behind the icons; children are sorted. VERIFY.
-- [~] **e. TokenHUD patches**: kept (the V14 API matches). VERIFY.
+- [x] **d. `Token#_drawEffects`** (verified live): selects effects the way V14 core does (`appliedEffects` filtered by `showIcon`); the last overlay wins; the background sits behind the icons; children are sorted. VERIFY.
+- [x] **e. TokenHUD patches** (verified live): kept (the V14 API matches). VERIFY.
 - [~] **f. `TokenDocument#inCombat`**: kept. VERIFY turn markers and the HUD.
 - [x] **g. `JournalSheet` width**: deleted (V1 class, unused by core).
 - [~] **h. CombatTracker**: core's `_onRender` runs with `parts: []`, because it looks up the tracker markup that `<combat-view>` replaces and would throw on turn changes. VERIFY.
 - [x] **i. `ChatMessage._getSpeakerFrom*`**: deleted. They have been true-private since V13, and core returns the same data.
 - [x] **j. `DragDrop#_handleDragStart`**: kept.
 - [x] **k. Directory create**: uses the V13+ `(event, target)` signature; folder from `target.closest('[data-folder-id]')`.
-- [~] **l. Pop-out (detached) windows (new).** V14 can detach any ApplicationV2 into a separate browser window. EP's Lit elements, menus, tooltips and windows are bound to the main document, and Firefox also loses custom-element prototypes on adoption (#13321). `_canDetach` returns `false` for CombatTracker, ChatLog and ChatPopout. A full fix (the `openDetachedWindow` hook, re-registering elements, per-document overlays) is backlog 10.9. VERIFY that the detach control is hidden.
+- [x] **l. Pop-out (detached) windows (new).** Verified live. V14 can detach any ApplicationV2 into a separate browser window. EP's Lit elements, menus, tooltips and windows are bound to the main document, and Firefox also loses custom-element prototypes on adoption (#13321). `_canDetach` returns `false` for CombatTracker, ChatLog and ChatPopout. A full fix (the `openDetachedWindow` hook, re-registering elements, per-document overlays) is backlog 10.9. VERIFY that the detach control is hidden.
 
 ### 5.2 Foundry DOM selectors [9312e90d, e557c596, 17db5912]
 - [~] Combat tab right-click: delegated `contextmenu` listener on `#sidebar-tabs [data-tab='combat']` (V13+ buttons).
@@ -519,10 +607,24 @@ await (async () => {
 })()
 ```
 
-Results (to fill in):
+Results (2026-09-23, 14.368, GM, default scene):
 
 ```
-(pending)
+version 14.368 | DiceTerm/UserConfig/tinymce/timeSince/mergeObject globals: undefined
+TextEditor global: function | ProseMirror global: object (menu/keymaps/schema present)
+foundry.prosemirror.dom.serializeString: function | ProseMirrorEditor.create: function
+MeasuredTemplate: function (shim) | canvas.templates: object (shim) | placeRegion: function
+level: defaultLevel0000 | TEMPLATE_CREATE: null | REGION_CREATE: defaultRole 1 | can: true
+REGION_VISIBILITY {LAYER 0, GAMEMASTER 1, ALWAYS 2, OBSERVER 3, LAYER_UNLOCKED 4}
+CHAT_MESSAGE_TYPES: undefined | core.rollMode: null | core.messageMode: "public"
+DICE_ROLL_MODES: legacy values | ChatMessage.modes: public, gm, blind, self, ic
+statusEffects: Array keyed by id | DEFEATED: "dead"
+ui.controls.initialize: function (shim) | activate: function | control/tool: tokens/select
+applications.instances: object | _canDetach: function | ChatPopout: function
+game.model.Actor: base, biological, character, synthetic, infomorph
+ForcedDeletion: function | ACTIVE_EFFECT_SHOW_ICON {NEVER 0, CONDITIONAL 1, ALWAYS 2}
+css/mce.css: 200 | fontawesome all.min.css: 200
+#ui-top > #loading: true | combat tab: true | compendium footer: true
 ```
 
 ---
