@@ -40,3 +40,8 @@ header {
 enriched-html {
   padding: 0 0.5rem;
 }
+
+// enriched-html sets display on :host, which would override [hidden].
+enriched-html[hidden] {
+  display: none;
+}

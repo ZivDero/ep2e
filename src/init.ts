@@ -17,14 +17,12 @@ import { openWindow } from './components/window/window-controls';
 import { ResizeOption } from './components/window/window-options';
 import { enumValues } from './data-enums';
 import { ActorEP } from './entities/actor/actor';
-import { ActorEPSheet } from './entities/actor/actor-sheet';
 import { formattedSleeveInfo, isSleeve } from './entities/actor/sleeves';
 import { ChatMessageEP } from './entities/chat-message';
 import { CompendiumSearch } from './entities/components/compendium-search/compendium-search';
 import { ActorType } from './entities/entity-types';
 import { findActor, findToken } from './entities/find-entities';
 import { ItemEP } from './entities/item/item';
-import { ItemEPSheet } from './entities/item/item-sheet';
 import { migrateWorld } from './entities/migration';
 import { foundry9to10Migration } from './entities/v9to10migration';
 import type { ItemEntity } from './entities/models';
@@ -83,7 +81,8 @@ Hooks.once('init', () => {
     'icons/nested-eclipses.svg',
   );
   CONFIG.Actor.documentClass = ActorEP;
-  foundry.documents.collections.Actors.registerSheet(EP.Name, ActorEPSheet, { makeDefault: true });
+  // No registerSheet: V14 only accepts Application/DocumentSheetV2 classes, and
+  // ActorEP/ItemEP override `sheet` to open EP's own windows anyway.
 
   CONFIG.Scene.documentClass = SceneEP;
   CONFIG.ChatMessage.documentClass = ChatMessageEP;
@@ -92,7 +91,6 @@ Hooks.once('init', () => {
   CONFIG.User.documentClass = UserEP;
   CONFIG.Item.documentClass = ItemEP;
 
-  foundry.documents.collections.Items.registerSheet(EP.Name, ItemEPSheet, { makeDefault: true });
   CONFIG.Combat.initiative.decimals = 2;
   // V14 keys status effects by id and uses name/img. Keep core's defeated
   // status: the combat view's defeated toggle applies it as an overlay.
