@@ -15,7 +15,9 @@ The roadmap's claims were fact-checked on 2026-09-22 against the V14 API docs (b
 
 All offline work is done and committed on `v14-upgrade` (not pushed). Live testing on a local **Foundry 14.368** has started: the system loads, and the core flows work with **no errors and no deprecation warnings** (see [Live verification](#live-verification-2026-09-23-foundry-14368)). Two bugs were found on the live instance and fixed [f012b837].
 
-Player and no-GM flows are verified too. Still open: Firefox, drag and drop, the explosive and area-effect chat-card UI, Dice So Nice, and migrating a real V13 world (none available yet).
+Player and no-GM flows are verified too, and a real V13 world migrates cleanly (see 0.6). Still open: Firefox, drag and drop, the explosive and area-effect chat-card UI, and Dice So Nice.
+
+**Released as 2.0.0 (2026-09-23)** from `facelift-light` (the port plus the light facelift).
 
 UX note from the player test: the description edit control (an icon at the right end of the "Description" heading) was hard to find. It is added to 9A below.
 
@@ -109,7 +111,6 @@ Setup:
 - The explosive settings form and area-effect chat card placement. The shared placement code and targeting are verified.
 - Dice So Nice.
 - A core Combat turn change (5.1h).
-- A migrated V13 world.
 
 **Notes:**
 - The browser tool's synthetic Escape doesn't reach Foundry's keyboard manager (missing `code`); a real `KeyboardEvent` does. It was a test artifact, not a bug.
@@ -158,7 +159,7 @@ Setup:
   - **Repack only while Foundry is stopped or at the setup screen.** With the repo linked into `Data/systems/ep2e`, Foundry holds `packs/*` open as LevelDB databases, and `npm run pack` rewrites them.
   - V14 itself needs Node 24 when run as a Node server (14.355). The build toolchain hasn't been checked on Node 24; if one Node has to serve both, test the build there first.
 - [x] **0.5 Instance hookup.** Junction `%LOCALAPPDATA%\FoundryVTT\Data\systems\ep2e` → `D:\Projects\ep2e`. The system folder must be the repo root, because `system.json` references `./build/dist/index.js` and `./packs/*`. Junction the repo to `<FoundryData>/Data/systems/ep2e`.
-- [~] **0.6 Test worlds.** Fresh world `ep2e-test` created. Still needed: and a **copy** of a real V13 world with actors (including unlinked tokens), items, combat state, chat history with rolls and area-effect cards, and placed templates. V14 migrates worlds one way (14.359).
+- [x] **0.6 Test worlds.** Fresh world `ep2e-test` created. A copy of a real V13 campaign world (EOS: core 13.350, EP 1.3.2; 9 actors, 129 owned items, 109 messages, 4 scenes) migrated without errors on 14.368: core migration, then EP's `migrateWorld` stamped 1.99.0; every actor sheet and item form opens; all messages render; new rolls, tokens and targeting work. The world had no placed tokens or templates, so unlinked-token and template→region migration weren't exercised. Originally wanted: a **copy** of a real V13 world with actors (including unlinked tokens), items, combat state, chat history with rolls and area-effect cards, and placed templates. V14 migrates worlds one way (14.359).
   - **Migration testing rule:** `migrateWorld` runs once per system version. Before each migration test, either bump the interim version (1.99.N) or re-copy the untouched V13 world. Otherwise the copy is already stamped and later migration steps never run on it.
   - Before opening the V13 copy in V14, export its actors, items, messages and settings as JSON so the stored data can be compared (flag-stored sleeves/vehicles/psi/onboard ALIs, chat Roll JSON, `templateIDs`, the `combatState` setting).
 - [x] **0.7 Run the console probe** (results in Appendix B) ([Appendix B](#appendix-b--console-probe)) and write the results into the VERIFY items.
@@ -358,7 +359,7 @@ V14 folded MeasuredTemplate into Regions (14.352).
   - CHANGELOG: draft 2.0.0 entry.
   - Finalize after Phase 7.
   - [7c1655d5, 6af79afd]
-- [ ] **6.7 Release.** Set version 2.0.0, finalize the CHANGELOG, push, and let the workflow publish.
+- [x] **6.7 Release.** Version 2.0.0, CHANGELOG dated, workflow granted `contents: write` (the fork's default token is read-only), pushed to the fork's `master`.
 
 ---
 

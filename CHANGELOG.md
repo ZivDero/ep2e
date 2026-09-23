@@ -1,6 +1,6 @@
 # Changelog
 
-## [2.0.0] - Unreleased
+## [2.0.0] - 2026-09-23
 
 Foundry V14 release. This version requires Foundry V14 and no longer supports V13; stay on 1.3.x for V13 worlds. Maintained as a fork at https://github.com/ZivDero/ep2e (the system id is still `ep2e`, so existing worlds keep working after switching the install link). Back up worlds before opening them in V14: the migration is one-way.
 
